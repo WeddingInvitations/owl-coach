@@ -70,8 +70,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = createTrainingPlanSchema.parse(body);
     
+    // Asegura que coverImage siempre sea string
+    const fixedData = {
+      ...validatedData,
+      coverImage: typeof validatedData.coverImage === 'string' ? validatedData.coverImage : '',
+      fullModules: Array.isArray(validatedData.fullModules)
+        ? validatedData.fullModules.filter((m) => typeof m === 'object' && m !== null && 'id' in m)
+        : [],
+    };
     const planId = await plansService.createPlan(
-      validatedData,
+      fixedData,
       userProfile.id,
       userProfile.displayName || `${userProfile.firstName} ${userProfile.lastName}`,
       userProfile.role

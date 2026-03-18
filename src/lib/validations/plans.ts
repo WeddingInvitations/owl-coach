@@ -24,14 +24,14 @@ export const createTrainingPlanSchema = z.object({
   title: z.string().min(1, 'El título del plan es requerido'),
   shortDescription: z.string().min(1, 'La descripción corta es requerida'),
   fullDescription: z.string().min(1, 'La descripción completa es requerida'),
-  coverImage: z.string().url('La imagen de portada debe ser una URL válida'),
+  coverImage: z.string().url('La imagen de portada debe ser una URL válida').optional().or(z.literal('')),
   difficulty: z.enum(['beginner', 'intermediate', 'advanced']),
   duration: z.number().min(1, 'La duración debe ser al menos 1 semana'),
   price: z.number().min(0, 'El precio debe ser 0 o más'),
   currency: z.enum(['USD', 'EUR']),
   categoryIds: z.array(z.string()).min(1, 'Al menos una categoría es requerida'),
   previewModules: z.array(trainingModuleSchema).min(1, 'Al menos un módulo de vista previa es requerido'),
-  fullModules: z.array(trainingModuleSchema).min(1, 'Al menos un módulo completo es requerido'),
+  fullModules: z.array(trainingModuleSchema).optional().or(z.array(z.any()).length(0)),
 });
 
 export const updateTrainingPlanSchema = createTrainingPlanSchema.partial().extend({
