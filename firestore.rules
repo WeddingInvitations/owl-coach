@@ -1,0 +1,106 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection
+    match /users/{userId} {
+      // Users can only read/write their own profile
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Owners can read all users, coaches can read users
+      allow read: if request.auth != null && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner' ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'coach');
+         
+      // Only owners can update user roles
+      allow update: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner' &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role']);
+    }
+    
+    // Training Plans collection
+    match /trainingPlans/{planId} {
+      // Everyone can read published training plans
+      allow read: if request.auth != null;
+      
+      // Only owners and coaches can create/update/delete training plans
+      allow create, update, delete: if request.auth != null && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner' ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'coach');
+    }
+    
+    // Training Plan Groups collection
+    match /trainingPlanGroups/{groupId} {
+      // Everyone can read published groups
+      allow read: if request.auth != null;
+      
+      // Only owners and coaches can create/update/delete groups
+      allow create, update, delete: if request.auth != null && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner' ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'coach');
+    }
+    
+    // Purchases collection
+    match /purchases/{purchaseId} {
+      // Users can only read their own purchases
+      allow read: if request.auth != null && 
+        (resource.data.userId == request.auth.uid ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner');
+      
+      // Users can create purchases for themselves
+      allow create: if request.auth != null && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // Only owners can update purchase status
+      allow update: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner';
+      
+      // No one can delete purchases (audit trail)
+      allow delete: if false;
+    }
+    
+    // Entitlements collection
+    match /entitlements/{entitlementId} {
+      // Users can only read their own entitlements
+      allow read: if request.auth != null && 
+        (resource.data.userId == request.auth.uid ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner');
+      
+      // Only the system (through backend logic) should create entitlements
+      // In practice, this would be done via Firebase Functions or admin SDK
+      allow create: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner';
+      
+      // No one can update or delete entitlements directly
+      allow update, delete: if false;
+    }
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    
+    function isOwner() {
+      return isAuthenticated() && getUserRole() == 'owner';
+    }
+    
+    function isCoach() {
+      return isAuthenticated() && getUserRole() == 'coach';
+    }
+    
+    function isUser() {
+      return isAuthenticated() && getUserRole() == 'user';
+    }
+    
+    function canManageContent() {
+      return isOwner() || isCoach();
+    }
+    
+    function ownsResource(resourceUserId) {
+      return request.auth.uid == resourceUserId;
+    }
+  }
+}
