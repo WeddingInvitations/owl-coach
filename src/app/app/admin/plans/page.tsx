@@ -11,8 +11,20 @@ import { TrainingPlan } from '@/types/training-plan';
 export default function AdminPlansPage() {
     const togglePublish = async (planId: string) => {
       try {
+        // Obtiene el usuario actual y su token usando getCurrentUser
+        const { getCurrentUser } = await import('@/lib/firebase/auth');
+        const user = getCurrentUser();
+        const token = user ? await user.getIdToken() : null;
+        if (!token) {
+          alert('No se pudo obtener el token de autenticación.');
+          return;
+        }
         const response = await fetch(`/api/plans/${planId}/publish`, {
           method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
         });
         if (response.ok) {
           const updated = await response.json();
