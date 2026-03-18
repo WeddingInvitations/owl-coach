@@ -10,17 +10,25 @@ import { registerSchema, RegisterFormData } from '@/lib/validations/auth';
 
 interface RegisterFormProps {
   onSubmit: (data: RegisterFormData) => Promise<void>;
+  onGoogleSignIn?: () => Promise<void>;
   loading?: boolean;
   error?: string;
+  successMessage?: string;
+  initialEmail?: string;
+  initialDisplayName?: string;
 }
 
-export function RegisterForm({ onSubmit, loading = false, error }: RegisterFormProps) {
+export function RegisterForm({ onSubmit, onGoogleSignIn, loading = false, error, successMessage, initialEmail = '', initialDisplayName = '' }: RegisterFormProps) {
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      email: initialEmail,
+      displayName: initialDisplayName,
+    },
   });
 
   return (
@@ -32,7 +40,33 @@ export function RegisterForm({ onSubmit, loading = false, error }: RegisterFormP
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {onGoogleSignIn && (
+          <div className="mb-4">
+            <Button
+              type="button"
+              className="w-full"
+              variant="outline"
+              onClick={onGoogleSignIn}
+              disabled={loading}
+            >
+              Registrarse con Google
+            </Button>
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">O con email</span>
+              </div>
+            </div>
+          </div>
+        )}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {successMessage && (
+            <div className="p-3 text-sm text-green-700 bg-green-50 border border-green-200 rounded-md">
+              {successMessage}
+            </div>
+          )}
           {error && (
             <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
               {error}
@@ -79,6 +113,7 @@ export function RegisterForm({ onSubmit, loading = false, error }: RegisterFormP
             Crear Cuenta
           </Button>
         </form>
+
 
         <div className="mt-6 text-center">
           <p className="text-sm text-muted-foreground">

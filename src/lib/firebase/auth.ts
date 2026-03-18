@@ -11,6 +11,7 @@ import {
   deleteUser,
   GoogleAuthProvider,
   signInWithPopup,
+  getAdditionalUserInfo,
   browserLocalPersistence,
   setPersistence,
 } from 'firebase/auth';
@@ -49,9 +50,9 @@ export async function loginUser(email: string, password: string) {
   try {
     const auth = await getClientAuth();
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    return { user: userCredential.user, error: null };
+    return { user: userCredential.user, error: null, errorCode: null };
   } catch (error: any) {
-    return { user: null, error: error.message };
+    return { user: null, error: error.message, errorCode: error.code as string };
   }
 }
 
@@ -76,9 +77,19 @@ export async function loginWithGoogle() {
     const auth = await getClientAuth();
     const provider = new GoogleAuthProvider();
     const userCredential = await signInWithPopup(auth, provider);
-    return { user: userCredential.user, error: null };
+    const additionalInfo = getAdditionalUserInfo(userCredential);
+    const isNewUser = additionalInfo?.isNewUser ?? false;
+    return { user: userCredential.user, isNewUser, error: null };
   } catch (error: any) {
-    return { user: null, error: error.message };
+    return { user: null, isNewUser: false, error: error.message };
+  }
+}
+
+export async function deleteCurrentAuthUser(): Promise<void> {
+  const auth = getAuth(getFirebaseApp());
+  const user = auth.currentUser;
+  if (user) {
+    await deleteUser(user);
   }
 }
 

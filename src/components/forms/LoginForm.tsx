@@ -13,9 +13,10 @@ interface LoginFormProps {
   onGoogleSignIn?: () => Promise<void>;
   loading?: boolean;
   error?: string;
+  successMessage?: string;
 }
 
-export function LoginForm({ onSubmit, onGoogleSignIn, loading = false, error }: LoginFormProps) {
+export function LoginForm({ onSubmit, onGoogleSignIn, loading = false, error, successMessage }: LoginFormProps) {
   const {
     register,
     handleSubmit,
@@ -34,6 +35,11 @@ export function LoginForm({ onSubmit, onGoogleSignIn, loading = false, error }: 
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {successMessage && (
+            <div className="p-3 text-sm text-green-700 bg-green-50 border border-green-200 rounded-md">
+              {successMessage}
+            </div>
+          )}
           {error && (
             <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
               {error}

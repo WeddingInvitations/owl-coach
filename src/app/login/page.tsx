@@ -1,18 +1,26 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { User } from 'firebase/auth';
 import { LoginForm } from '@/components/forms/LoginForm';
 import { LoginFormData } from '@/lib/validations/auth';
-import { loginUser, loginWithGoogle } from '@/lib/firebase/auth';
-import { ensureUserProfile } from '@/lib/firebase/users';
+import { loginUser, loginWithGoogle, logoutUser, deleteCurrentAuthUser } from '@/lib/firebase/auth';
+import { ensureUserProfile, getUserProfile } from '@/lib/firebase/users';
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string>('');
+
+  const hintParam = searchParams.get('hint');
+  const successMessage =
+    hintParam === 'alreadyregistered'
+      ? 'Tu cuenta de Google ya está registrada. Inicia sesión normalmente.'
+      : '';
 
   const completeLogin = async (firebaseUser: User, fallbackEmail: string = '') => {
     const userProfile = await ensureUserProfile({
@@ -46,9 +54,17 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const { user, error: loginError } = await loginUser(data.email, data.password);
+      const { user, error: loginError, errorCode } = await loginUser(data.email, data.password);
 
-      if (loginError || !user) {
+      if (!user) {
+        // User does not exist → redirect to register
+        if (
+          errorCode === 'auth/user-not-found' ||
+          errorCode === 'auth/invalid-credential'
+        ) {
+          router.push(`/register?email=${encodeURIComponent(data.email)}&hint=notfound`);
+          return;
+        }
         throw new Error(loginError || 'Error al iniciar sesión');
       }
 
@@ -65,10 +81,30 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const { user, error: loginError } = await loginWithGoogle();
+      const { user, isNewUser, error: loginError } = await loginWithGoogle();
 
       if (loginError || !user) {
         throw new Error(loginError || 'Error al iniciar sesión con Google');
+      }
+
+      if (isNewUser) {
+        // New Firebase Auth account → delete it and redirect to register
+        await deleteCurrentAuthUser();
+        router.push(
+          `/register?email=${encodeURIComponent(user.email || '')}&name=${encodeURIComponent(user.displayName || '')}&hint=google`
+        );
+        return;
+      }
+
+      // Existing Firebase Auth user: check they have a Firestore profile
+      const profile = await getUserProfile(user.uid);
+      if (!profile) {
+        // Auth account exists but no Firestore profile → treat as new user
+        await deleteCurrentAuthUser();
+        router.push(
+          `/register?email=${encodeURIComponent(user.email || '')}&name=${encodeURIComponent(user.displayName || '')}&hint=google`
+        );
+        return;
       }
 
       await completeLogin(user);
@@ -98,6 +134,7 @@ export default function LoginPage() {
           onGoogleSignIn={handleGoogleLogin}
           loading={loading}
           error={error}
+          successMessage={successMessage}
         />
 
         {/* Back to Home */}
@@ -111,5 +148,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>}>
+      <LoginContent />
+    </Suspense>
   );
 }
