@@ -9,6 +9,19 @@ import { Input } from '@/components/ui/Input';
 import { TrainingPlan } from '@/types/training-plan';
 
 export default function AdminPlansPage() {
+    const togglePublish = async (planId: string) => {
+      try {
+        const response = await fetch(`/api/plans/${planId}/publish`, {
+          method: 'PATCH',
+        });
+        if (response.ok) {
+          const updated = await response.json();
+          setPlans(plans.map(p => p.id === planId ? updated.data : p));
+        }
+      } catch (error) {
+        console.error('Error toggling publish:', error);
+      }
+    };
   const [plans, setPlans] = React.useState<TrainingPlan[]>([]);
   const [filteredPlans, setFilteredPlans] = React.useState<TrainingPlan[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -189,29 +202,27 @@ export default function AdminPlansPage() {
                               />
                             </div>
                           )}
-                          
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-2">
                               <h3 className="font-semibold text-lg">{plan.title}</h3>
                               <Badge variant={getLevelBadgeVariant(plan.difficulty)}>
                                 {plan.difficulty}
                               </Badge>
+                              {plan.isPublished ? (
+                                <Badge variant="default">Publicado</Badge>
+                              ) : (
+                                <Badge variant="secondary">No publicado</Badge>
+                              )}
                             </div>
-                            
                             <p className="text-muted-foreground mb-3 line-clamp-2">
                               {plan.shortDescription}
                             </p>
-                            
-                            <div className="flex flex-wrap gap-2 mb-3">
-                              {/* Remove tag display since plans don't have tags */}
-                            </div>
-                            
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                              <span>{plan.previewModules.length + plan.fullModules.length} modules</span>
+                              <span>{plan.previewModules.length + plan.fullModules.length} módulos</span>
                               <span>
                                 {[...plan.previewModules, ...plan.fullModules].reduce((total: number, module: any) => 
                                   total + module.exercises.length, 0
-                                )} exercises
+                                )} ejercicios
                               </span>
                               <span className="font-medium text-primary">
                                 ${plan.price}
@@ -220,11 +231,10 @@ export default function AdminPlansPage() {
                           </div>
                         </div>
                       </div>
-                      
                       <div className="flex flex-col gap-2 ml-4">
                         <Button variant="outline" size="sm" asChild>
                           <Link href={`/app/admin/plans/${plan.id}`}>
-                            Edit
+                            Editar
                           </Link>
                         </Button>
                         <Button 
@@ -232,7 +242,14 @@ export default function AdminPlansPage() {
                           size="sm"
                           onClick={() => deletePlan(plan.id)}
                         >
-                          Delete
+                          Eliminar
+                        </Button>
+                        <Button
+                          variant={plan.isPublished ? "secondary" : "default"}
+                          size="sm"
+                          onClick={() => togglePublish(plan.id)}
+                        >
+                          {plan.isPublished ? "Despublicar" : "Publicar"}
                         </Button>
                       </div>
                     </div>

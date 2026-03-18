@@ -13,16 +13,8 @@ export async function GET(request: NextRequest) {
     const difficulty = searchParams.get('difficulty');
     
     let plans;
-    
-    if (coachId) {
-      plans = await plansService.getPlansByCoach(coachId);
-    } else if (search) {
-      plans = await plansService.searchPlans(search);
-    } else if (difficulty) {
-      plans = await plansService.getPlansByDifficulty(difficulty);
-    } else {
-      plans = await plansService.getPublishedPlans();
-    }
+    // Para el panel admin, devuelve todos los planes
+    plans = await plansService.getAllPlans();
 
     return NextResponse.json({
       success: true,

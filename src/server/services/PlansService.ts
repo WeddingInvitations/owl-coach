@@ -5,6 +5,9 @@ import { requireCoach, requireCanEditPlan } from '@/lib/permissions/guards';
 import { UserRole } from '@/types/user';
 
 export class PlansService {
+    async getAllPlans(): Promise<TrainingPlan[]> {
+      return await trainingPlansRepository.getAll();
+    }
   async createPlan(
     planData: CreateTrainingPlanData,
     coachId: string,

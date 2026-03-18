@@ -244,7 +244,8 @@ export default function CreatePlanPage() {
       });
 
       if (response.ok) {
-        router.push('/app/admin/plans');
+        const { data } = await response.json();
+        router.push(`/app/admin/plans/${data.id}`);
       } else {
         console.error('Error creating plan');
       }
