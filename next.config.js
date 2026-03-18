@@ -2,6 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  output: 'standalone',
   experimental: {
     // Remove deprecated appDir option - it's now default in Next.js 14
   },

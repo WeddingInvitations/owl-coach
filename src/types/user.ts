@@ -25,4 +25,3 @@ export interface UpdateUserData {
   displayName?: string;
   role?: UserRole;
 }
-}

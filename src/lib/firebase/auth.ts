@@ -3,12 +3,22 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   User,
-  updateProfile
+  updateProfile,
+  getAuth
 } from 'firebase/auth';
-import { auth } from './config';
+import { getFirebaseApp, isFirebaseClientConfigured } from './config';
+
+function getClientAuth() {
+  if (!isFirebaseClientConfigured()) {
+    throw new Error('Firebase client environment variables are not configured');
+  }
+
+  return getAuth(getFirebaseApp());
+}
 
 export async function loginUser(email: string, password: string) {
   try {
+    const auth = getClientAuth();
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return { user: userCredential.user, error: null };
   } catch (error: any) {
@@ -18,6 +28,7 @@ export async function loginUser(email: string, password: string) {
 
 export async function registerUser(email: string, password: string, displayName: string) {
   try {
+    const auth = getClientAuth();
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     
     // Update the user's display name
@@ -33,6 +44,7 @@ export async function registerUser(email: string, password: string, displayName:
 
 export async function logoutUser() {
   try {
+    const auth = getClientAuth();
     await signOut(auth);
     return { success: true, error: null };
   } catch (error: any) {
@@ -41,5 +53,6 @@ export async function logoutUser() {
 }
 
 export function getCurrentUser(): User | null {
+  const auth = getClientAuth();
   return auth.currentUser;
 }

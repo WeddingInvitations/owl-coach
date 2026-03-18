@@ -1,5 +1,4 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { FirebaseApp, getApp, getApps, initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -11,11 +10,38 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const hasPublicFirebaseConfig = Boolean(
+  firebaseConfig.apiKey &&
+  firebaseConfig.authDomain &&
+  firebaseConfig.projectId &&
+  firebaseConfig.storageBucket &&
+  firebaseConfig.messagingSenderId &&
+  firebaseConfig.appId
+);
 
-// Initialize Firebase services
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+let appInstance: FirebaseApp | null = null;
 
-export default app;
+export function isFirebaseClientConfigured() {
+  return hasPublicFirebaseConfig;
+}
+
+export function getFirebaseApp(): FirebaseApp {
+  if (appInstance) {
+    return appInstance;
+  }
+
+  if (getApps().length > 0) {
+    appInstance = getApp();
+    return appInstance;
+  }
+
+  appInstance = hasPublicFirebaseConfig
+    ? initializeApp(firebaseConfig)
+    : initializeApp({ projectId: 'owl-coach' });
+
+  return appInstance;
+}
+
+export const db = getFirestore(getFirebaseApp());
+
+export default getFirebaseApp;
