@@ -18,7 +18,7 @@ export default function DashboardPage() {
   }, []);
 
   if (!user) {
-    return <div>Loading...</div>;
+    return <div>Cargando...</div>;
   }
 
   return (
@@ -26,10 +26,10 @@ export default function DashboardPage() {
       {/* Welcome Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">
-          Welcome back, {user.displayName}!
+          ¡Bienvenido de nuevo, {user.displayName}!
         </h1>
         <p className="text-muted-foreground">
-          Here's what's happening with your training platform
+          Aquí está lo que está pasando en tu plataforma de entrenamiento
         </p>
       </div>
 
@@ -38,14 +38,14 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Available Plans
+              Planes Disponibles
             </CardTitle>
             <span className="text-2xl">📚</span>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">25</div>
             <p className="text-xs text-muted-foreground">
-              Training plans available
+              Planes de entrenamiento disponibles
             </p>
           </CardContent>
         </Card>
@@ -53,14 +53,14 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              My Library
+              Mi Biblioteca
             </CardTitle>
             <span className="text-2xl">🔓</span>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">3</div>
             <p className="text-xs text-muted-foreground">
-              Plans you own
+              Planes que posees
             </p>
           </CardContent>
         </Card>
@@ -68,14 +68,14 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Plan Groups
+              Paquetes de Planes
             </CardTitle>
             <span className="text-2xl">📦</span>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">8</div>
             <p className="text-xs text-muted-foreground">
-              Training packages
+              Paquetes de entrenamiento
             </p>
           </CardContent>
         </Card>
@@ -83,7 +83,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Your Role
+              Tu Rol
             </CardTitle>
             <span className="text-2xl">👤</span>
           </CardHeader>
@@ -100,20 +100,20 @@ export default function DashboardPage() {
         {/* General Actions */}
         <Card>
           <CardHeader>
-            <CardTitle>Explore Training Plans</CardTitle>
+            <CardTitle>Explorar Planes de Entrenamiento</CardTitle>
             <CardDescription>
-              Discover new training programs from expert coaches
+              Descubre nuevos programas de entrenamiento de coaches expertos
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Link href="/app/plans">
-              <Button className="w-full">Browse All Plans</Button>
+              <Button className="w-full">Ver Todos los Planes</Button>
             </Link>
             <Link href="/app/groups">
-              <Button variant="outline" className="w-full">View Plan Groups</Button>
+              <Button variant="outline" className="w-full">Ver Paquetes</Button>
             </Link>
             <Link href="/app/my-library">
-              <Button variant="ghost" className="w-full">My Library</Button>
+              <Button variant="ghost" className="w-full">Mi Biblioteca</Button>
             </Link>
           </CardContent>
         </Card>
@@ -189,9 +189,9 @@ export default function DashboardPage() {
       {/* Recent Activity */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
+          <CardTitle>Actividad Reciente</CardTitle>
           <CardDescription>
-            Latest updates on the platform
+            Últimas novedades en la plataforma
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -201,8 +201,8 @@ export default function DashboardPage() {
                 <span className="text-sm">📚</span>
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium">New plan available: "HIIT Fundamentals"</p>
-                <p className="text-xs text-muted-foreground">2 hours ago</p>
+                <p className="text-sm font-medium">Nuevo plan disponible: "Fundamentos HIIT"</p>
+                <p className="text-xs text-muted-foreground">Hace 2 horas</p>
               </div>
             </div>
             
@@ -211,8 +211,8 @@ export default function DashboardPage() {
                 <span className="text-sm">📦</span>
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium">New training package: "Complete Strength Bundle"</p>
-                <p className="text-xs text-muted-foreground">1 day ago</p>
+                <p className="text-sm font-medium">Nuevo paquete: "Bundle Fuerza Completa"</p>
+                <p className="text-xs text-muted-foreground">Hace 1 día</p>
               </div>
             </div>
 
@@ -221,8 +221,8 @@ export default function DashboardPage() {
                 <span className="text-sm">🏆</span>
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium">Platform update: Enhanced video player</p>
-                <p className="text-xs text-muted-foreground">3 days ago</p>
+                <p className="text-sm font-medium">Actualización: Reproductor de vídeo mejorado</p>
+                <p className="text-xs text-muted-foreground">Hace 3 días</p>
               </div>
             </div>
           </div>

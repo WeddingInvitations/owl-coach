@@ -113,16 +113,16 @@ export default function PlanDetailPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Purchase failed');
+        throw new Error(result.error || 'La compra ha fallado');
       }
 
       setHasAccess(true);
-      alert('Purchase successful! You now have access to the full plan.');
+      alert('¡Compra realizada con éxito! Ya tienes acceso al plan completo.');
       
       // Reload plan to get full content
       await loadPlan();
     } catch (error: any) {
-      alert(`Purchase failed: ${error.message}`);
+      alert(`La compra ha fallado: ${error.message}`);
     } finally {
       setPurchaseLoading(false);
     }
@@ -131,7 +131,7 @@ export default function PlanDetailPage() {
   if (loading) {
     return (
       <div className="flex justify-center py-12">
-        <LoadingSpinner size="lg" text="Loading plan..." />
+        <LoadingSpinner size="lg" text="Cargando plan..." />
       </div>
     );
   }
@@ -139,8 +139,8 @@ export default function PlanDetailPage() {
   if (error || !plan) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-2xl font-bold mb-4">Plan Not Found</h2>
-        <p className="text-muted-foreground">{error || 'The requested plan could not be found.'}</p>
+        <h2 className="text-2xl font-bold mb-4">Plan no encontrado</h2>
+        <p className="text-muted-foreground">{error || 'El plan solicitado no se pudo encontrar.'}</p>
       </div>
     );
   }
@@ -165,7 +165,7 @@ export default function PlanDetailPage() {
                 {formatDifficulty(plan.difficulty)}
               </Badge>
               <Badge variant={plan.isPublished ? 'success' : 'warning'}>
-                {plan.isPublished ? 'Published' : 'Draft'}
+                {plan.isPublished ? 'Publicado' : 'Borrador'}
               </Badge>
             </div>
             <h1 className="text-4xl font-bold mb-2">{plan.title}</h1>
@@ -180,7 +180,7 @@ export default function PlanDetailPage() {
           {/* Description */}
           <Card>
             <CardHeader>
-              <CardTitle>About This Plan</CardTitle>
+              <CardTitle>Sobre este Plan</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground leading-relaxed">
@@ -193,9 +193,9 @@ export default function PlanDetailPage() {
           {plan.previewModules.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Preview Modules</CardTitle>
+                <CardTitle>Módulos de Vista Previa</CardTitle>
                 <CardDescription>
-                  Get a taste of what's included in this training plan
+                  Una muestra de lo que incluye este plan de entrenamiento
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -208,9 +208,9 @@ export default function PlanDetailPage() {
           {hasAccess && plan.fullModules.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Complete Training Program</CardTitle>
+                <CardTitle>Programa de Entrenamiento Completo</CardTitle>
                 <CardDescription>
-                  Full access content - available to plan owners
+                  Contenido de acceso completo - disponible para propietarios del plan
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -225,28 +225,28 @@ export default function PlanDetailPage() {
               <div className="absolute inset-0 bg-muted/50 backdrop-blur-sm rounded-lg flex items-center justify-center z-10">
                 <div className="text-center p-6">
                   <div className="text-4xl mb-4">🔒</div>
-                  <h3 className="text-lg font-semibold mb-2">Premium Content Locked</h3>
+                  <h3 className="text-lg font-semibold mb-2">Contenido Premium Bloqueado</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Purchase this plan to unlock {plan.fullModules.length} additional modules
+                    Compra este plan para desbloquear {plan.fullModules.length} módulos adicionales
                   </p>
                   {user?.role === 'user' && (
                     <Button onClick={handlePurchase} loading={purchaseLoading}>
-                      Unlock for {formatPrice(plan.price, plan.currency)}
+                      Desbloquear por {formatPrice(plan.price, plan.currency)}
                     </Button>
                   )}
                 </div>
               </div>
               <CardHeader>
-                <CardTitle>Complete Training Program</CardTitle>
+                <CardTitle>Programa de Entrenamiento Completo</CardTitle>
                 <CardDescription>
-                  {plan.fullModules.length} modules with detailed exercises and instructions
+                  {plan.fullModules.length} módulos con ejercicios e instrucciones detalladas
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {plan.fullModules.map((module, index) => (
                     <div key={module.id} className="p-4 border rounded-lg opacity-50">
-                      <h4 className="font-medium">Module {index + 1}: {module.title}</h4>
+                      <h4 className="font-medium">Módulo {index + 1}: {module.title}</h4>
                       <p className="text-sm text-muted-foreground">{module.description}</p>
                     </div>
                   ))}
@@ -265,7 +265,7 @@ export default function PlanDetailPage() {
                 {formatPrice(plan.price, plan.currency)}
               </CardTitle>
               <CardDescription>
-                One-time purchase for lifetime access
+                Compra única para acceso de por vida
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -275,23 +275,23 @@ export default function PlanDetailPage() {
                   onClick={handlePurchase}
                   loading={purchaseLoading}
                 >
-                  Purchase Plan
+                  Comprar Plan
                 </Button>
               )}
               
               {hasAccess && (
                 <Badge variant="success" className="w-full justify-center py-2">
-                  ✅ You own this plan
+                  ✅ Ya posees este plan
                 </Badge>
               )}
 
               {!user && (
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground mb-2">
-                    Sign in to purchase
+                    Inicia sesión para comprar
                   </p>
                   <Button variant="outline" className="w-full" asChild>
-                    <a href="/login">Sign In</a>
+                    <a href="/login">Iniciar sesión</a>
                   </Button>
                 </div>
               )}
@@ -301,23 +301,23 @@ export default function PlanDetailPage() {
           {/* Plan Details */}
           <Card>
             <CardHeader>
-              <CardTitle>Plan Details</CardTitle>
+              <CardTitle>Detalles del Plan</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Duration</span>
+                <span className="text-muted-foreground">Duración</span>
                 <span className="font-medium">{formatDuration(plan.duration)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Difficulty</span>
+                <span className="text-muted-foreground">Dificultad</span>
                 <Badge variant="outline">{formatDifficulty(plan.difficulty)}</Badge>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Total Modules</span>
+                <span className="text-muted-foreground">Total Módulos</span>
                 <span className="font-medium">{allModules.length}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Estimated Time</span>
+                <span className="text-muted-foreground">Tiempo Estimado</span>
                 <span className="font-medium">{formatEstimatedDuration(totalEstimatedTime)}</span>
               </div>
               <div className="flex justify-between">
@@ -339,12 +339,12 @@ function ModulesList({ modules, isPreview }: { modules: TrainingModule[], isPrev
         <div key={module.id} className="p-4 border rounded-lg">
           <div className="flex items-start justify-between mb-2">
             <h4 className="font-medium">
-              Module {index + 1}: {module.title}
+              Módulo {index + 1}: {module.title}
             </h4>
             <div className="flex items-center space-x-2">
               {isPreview && (
                 <Badge variant="outline" className="text-xs">
-                  Preview
+                  Vista previa
                 </Badge>
               )}
               <span className="text-xs text-muted-foreground">
@@ -356,7 +356,7 @@ function ModulesList({ modules, isPreview }: { modules: TrainingModule[], isPrev
             {module.description}
           </p>
           <div className="text-xs text-muted-foreground">
-            {module.exercises.length} exercises
+            {module.exercises.length} ejercicios
           </div>
         </div>
       ))}

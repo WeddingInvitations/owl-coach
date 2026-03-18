@@ -13,3 +13,7 @@ Dockerfile.simple
 .vscode
 .idea
 README.md
+
+# Keep runtime static assets placeholder so /public exists in Docker builds
+!public/
+!public/.gitkeep

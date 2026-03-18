@@ -1,34 +1,35 @@
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 
-// Inicializar Firebase Admin solo si no está ya inicializado
-let adminApp;
-if (getApps().length === 0) {
-  try {
-    // En producción, usar service account key
-    if (process.env.FIREBASE_ADMIN_PRIVATE_KEY && process.env.FIREBASE_ADMIN_CLIENT_EMAIL) {
-      adminApp = initializeApp({
-        credential: cert({
-          projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-          clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
-          privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY.replace(/\\n/g, '\n'),
-        }),
-      });
-    } else {
-      // En desarrollo o emuladores
-      adminApp = initializeApp({
+function createAdminApp(): App {
+  // 1. If service account env vars are provided, use them explicitly
+  if (process.env.FIREBASE_ADMIN_PRIVATE_KEY && process.env.FIREBASE_ADMIN_CLIENT_EMAIL) {
+    return initializeApp({
+      credential: cert({
         projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'owl-coach',
-      });
-    }
-  } catch (error) {
-    console.error('Error initializing Firebase Admin:', error);
-    // Fallback a inicialización básica
-    adminApp = initializeApp({
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'owl-coach',
+        clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      }),
     });
   }
-} else {
+
+  // 2. Fall back to Application Default Credentials (gcloud auth application-default login)
+  //    This works locally when you run: gcloud auth application-default login
+  return initializeApp({
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'owl-coach',
+  });
+}
+
+let adminApp: App;
+if (getApps().length > 0) {
   adminApp = getApps()[0];
+} else {
+  try {
+    adminApp = createAdminApp();
+  } catch (error) {
+    console.error('[firebase-admin] Initialization error:', error);
+    adminApp = initializeApp({ projectId: 'owl-coach' });
+  }
 }
 
 export const admin = {

@@ -67,7 +67,7 @@ export default function MyLibraryPage() {
   if (loading) {
     return (
       <div className="flex justify-center py-12">
-        <LoadingSpinner size="lg" text="Loading your library..." />
+        <LoadingSpinner size="lg" text="Cargando tu biblioteca..." />
       </div>
     );
   }
@@ -75,7 +75,7 @@ export default function MyLibraryPage() {
   if (error) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-2xl font-bold mb-4">Unable to Load Library</h2>
+        <h2 className="text-2xl font-bold mb-4">No se pudo cargar la biblioteca</h2>
         <p className="text-muted-foreground">{error}</p>
       </div>
     );
@@ -84,19 +84,19 @@ export default function MyLibraryPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">My Library</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Mi Biblioteca</h1>
         <p className="text-muted-foreground">
-          Access your purchased training plans and track your progress
+          Accede a tus planes de entrenamiento comprados y sigue tu progreso
         </p>
       </div>
 
       {unlockedPlans.length === 0 ? (
         <EmptyState
-          title="Your Library is Empty"
-          description="You haven't purchased any training plans yet. Browse our catalog to find plans that match your fitness goals."
+          title="Tu Biblioteca está Vacía"
+          description="Todavía no has comprado ningún plan de entrenamiento. Explora nuestro catálogo para encontrar planes que se ajusten a tus objetivos."
           icon={<span className="text-4xl">📚</span>}
           action={{
-            label: 'Browse Plans',
+            label: 'Ver Planes',
             onClick: () => window.location.href = '/app/plans'
           }}
         />
@@ -107,14 +107,14 @@ export default function MyLibraryPage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Owned Plans
+                  Planes Adquiridos
                 </CardTitle>
                 <span className="text-2xl">📚</span>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{unlockedPlans.length}</div>
                 <p className="text-xs text-muted-foreground">
-                  Training plans in your library
+                  Planes de entrenamiento en tu biblioteca
                 </p>
               </CardContent>
             </Card>
@@ -122,7 +122,7 @@ export default function MyLibraryPage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Total Value
+                  Valor Total
                 </CardTitle>
                 <span className="text-2xl">💰</span>
               </CardHeader>
@@ -134,7 +134,7 @@ export default function MyLibraryPage() {
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Total investment in training
+                  Inversión total en entrenamiento
                 </p>
               </CardContent>
             </Card>
@@ -142,16 +142,16 @@ export default function MyLibraryPage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Total Duration
+                  Duración Total
                 </CardTitle>
                 <span className="text-2xl">⏱️</span>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {unlockedPlans.reduce((total, plan) => total + plan.duration, 0)} weeks
+                  {unlockedPlans.reduce((total, plan) => total + plan.duration, 0)} semanas
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Of structured training content
+                  De contenido de entrenamiento estructurado
                 </p>
               </CardContent>
             </Card>
@@ -169,7 +169,7 @@ export default function MyLibraryPage() {
                   />
                   <div className="absolute top-4 left-4">
                     <Badge variant="success">
-                      ✅ Owned
+                      ✅ Adquirido
                     </Badge>
                   </div>
                   <div className="absolute top-4 right-4">
@@ -201,7 +201,7 @@ export default function MyLibraryPage() {
                     </div>
                     <div className="flex items-center space-x-1">
                       <span>📚</span>
-                      <span>{plan.previewModules.length + plan.fullModules.length} modules</span>
+                      <span>{plan.previewModules.length + plan.fullModules.length} módulos</span>
                     </div>
                   </div>
 
@@ -209,7 +209,7 @@ export default function MyLibraryPage() {
                   <div className="flex space-x-2">
                     <Link href={`/app/plans/${plan.slug}?access=true`} className="flex-1">
                       <Button className="w-full">
-                        Start Training
+                        Comenzar Entrenamiento
                       </Button>
                     </Link>
                     <Link href={`/app/plans/${plan.slug}`}>

@@ -36,6 +36,8 @@ spec:
           value: "1:831473832501:web:2e88bf60073fe84947177c"
         - name: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
           value: "G-HBKC82DJ4Q"
+        - name: OWNER_EMAILS
+          value: "f14agui@gmail.com"
         resources:
           limits:
             memory: "512Mi"

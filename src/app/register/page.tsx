@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { RegisterForm } from '@/components/forms/RegisterForm';
 import { RegisterFormData } from '@/lib/validations/auth';
+import { registerUser } from '@/lib/firebase/auth';
+import { ensureUserProfile } from '@/lib/firebase/users';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -16,25 +18,34 @@ export default function RegisterPage() {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+      const { user, error: registerError } = await registerUser(
+        data.email,
+        data.password,
+        data.displayName,
+      );
+
+      if (registerError || !user) {
+        throw new Error(registerError || 'Error al crear la cuenta');
+      }
+
+      const userProfile = await ensureUserProfile({
+        uid: user.uid,
+        email: user.email || data.email,
+        displayName: data.displayName,
       });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Registration failed');
-      }
+      const token = await user.getIdToken();
 
       // Store user data and token
-      if (result.data?.token) {
-        localStorage.setItem('authToken', result.data.token);
-        localStorage.setItem('user', JSON.stringify(result.data.user));
-      }
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('user', JSON.stringify({
+        id: userProfile.id,
+        email: userProfile.email,
+        firstName: userProfile.firstName,
+        lastName: userProfile.lastName,
+        displayName: userProfile.displayName,
+        role: userProfile.role,
+      }));
 
       // Redirect to dashboard
       router.push('/app/dashboard');
@@ -71,7 +82,7 @@ export default function RegisterPage() {
             href="/"
             className="text-sm text-muted-foreground hover:text-foreground"
           >
-            ← Back to Home
+            ← Volver al inicio
           </Link>
         </div>
       </div>

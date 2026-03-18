@@ -7,8 +7,8 @@ import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 // const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Owl Coach - Training Plans Platform',
-  description: 'Professional training plans and coaching platform',
+  title: 'Owl Coach - Plataforma de Planes de Entrenamiento',
+  description: 'Plataforma profesional de planes de entrenamiento y coaching',
 };
 
 export default function RootLayout({

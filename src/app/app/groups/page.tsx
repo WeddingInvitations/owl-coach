@@ -89,13 +89,13 @@ export default function GroupsPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Purchase failed');
+        throw new Error(result.error || 'La compra ha fallado');
       }
 
       await loadUserAccess();
-      alert('Purchase successful! You now have access to all plans in this group.');
+      alert('¡Compra realizada con éxito! Ya tienes acceso a todos los planes de este paquete.');
     } catch (error: any) {
-      alert(`Purchase failed: ${error.message}`);
+      alert(`La compra ha fallado: ${error.message}`);
     }
   };
 
@@ -110,16 +110,16 @@ export default function GroupsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Training Packages</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Paquetes de Entrenamiento</h1>
         <p className="text-muted-foreground">
-          Discover bundled training plans with significant savings
+          Descubre paquetes de planes de entrenamiento con grandes descuentos
         </p>
       </div>
 
       {groups.length === 0 ? (
         <EmptyState
-          title="No Training Packages Available"
-          description="There are no training packages available at the moment. Check back later for exciting bundles!"
+          title="No hay Paquetes Disponibles"
+          description="No hay paquetes de entrenamiento disponibles en este momento. ¡Vuelve más tarde para ver nuevos bundles!"
           icon={<span className="text-4xl">📦</span>}
         />
       ) : (

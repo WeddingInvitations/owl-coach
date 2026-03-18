@@ -69,7 +69,7 @@ export default function AdminPage() {
   if (loading) {
     return (
       <div className="flex justify-center py-12">
-        <div>Loading admin dashboard...</div>
+        <div>Cargando panel de administración...</div>
       </div>
     );
   }
@@ -81,13 +81,13 @@ export default function AdminPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Users
+              Total Usuarios
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.users}</div>
             <div className="text-xs text-muted-foreground">
-              Platform registrations
+              Registros en la plataforma
             </div>
           </CardContent>
         </Card>
@@ -95,13 +95,13 @@ export default function AdminPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Training Plans
+              Planes de Entrenamiento
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.plans}</div>
             <div className="text-xs text-muted-foreground">
-              Individual courses
+              Cursos individuales
             </div>
           </CardContent>
         </Card>
@@ -109,13 +109,13 @@ export default function AdminPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Plan Groups
+              Paquetes de Planes
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.groups}</div>
             <div className="text-xs text-muted-foreground">
-              Package offerings
+              Paquetes disponibles
             </div>
           </CardContent>
         </Card>
@@ -123,13 +123,13 @@ export default function AdminPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Purchases
+              Total Compras
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.purchases}</div>
             <div className="text-xs text-muted-foreground">
-              Successful orders
+              Pedidos completados
             </div>
           </CardContent>
         </Card>
@@ -137,13 +137,13 @@ export default function AdminPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Revenue
+              Ingresos
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${stats.revenue.toFixed(2)}</div>
             <div className="text-xs text-muted-foreground">
-              Total earnings
+              Ganancias totales
             </div>
           </CardContent>
         </Card>
@@ -152,15 +152,15 @@ export default function AdminPage() {
       {/* Recent Activity */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Purchases</CardTitle>
+          <CardTitle>Compras Recientes</CardTitle>
           <CardDescription>
-            Latest purchase activity on the platform
+            Últimas compras en la plataforma
           </CardDescription>
         </CardHeader>
         <CardContent>
           {recentActivity.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No recent activity
+              Sin actividad reciente
             </div>
           ) : (
             <div className="space-y-4">
@@ -171,10 +171,10 @@ export default function AdminPage() {
                       Purchase #{purchase.id.slice(-8)}
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      User: {purchase.userId}
+                      Usuario: {purchase.userId}
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      Item: {purchase.productId} ({purchase.productType})
+                      Producto: {purchase.productId} ({purchase.productType})
                     </div>
                   </div>
                   <div className="text-right">
@@ -195,31 +195,31 @@ export default function AdminPage() {
       {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
+          <CardTitle>Acciones Rápidas</CardTitle>
           <CardDescription>
-            Common administrative tasks
+            Tareas administrativas comunes
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
             <button className="p-4 text-left border rounded-lg hover:bg-muted/50 transition-colors">
-              <div className="font-medium">Create Training Plan</div>
-              <div className="text-sm text-muted-foreground">Add new course content</div>
+              <div className="font-medium">Crear Plan de Entrenamiento</div>
+              <div className="text-sm text-muted-foreground">Añadir nuevo contenido</div>
             </button>
             
             <button className="p-4 text-left border rounded-lg hover:bg-muted/50 transition-colors">
-              <div className="font-medium">Create Plan Group</div>
-              <div className="text-sm text-muted-foreground">Bundle plans together</div>
+              <div className="font-medium">Crear Paquete de Planes</div>
+              <div className="text-sm text-muted-foreground">Agrupar planes juntos</div>
             </button>
             
             <button className="p-4 text-left border rounded-lg hover:bg-muted/50 transition-colors">
-              <div className="font-medium">Manage Users</div>
-              <div className="text-sm text-muted-foreground">View and edit user accounts</div>
+              <div className="font-medium">Gestionar Usuarios</div>
+              <div className="text-sm text-muted-foreground">Ver y editar cuentas de usuario</div>
             </button>
             
             <button className="p-4 text-left border rounded-lg hover:bg-muted/50 transition-colors">
-              <div className="font-medium">Export Data</div>
-              <div className="text-sm text-muted-foreground">Download reports</div>
+              <div className="font-medium">Exportar Datos</div>
+              <div className="text-sm text-muted-foreground">Descargar informes</div>
             </button>
           </div>
         </CardContent>

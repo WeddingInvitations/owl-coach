@@ -3,18 +3,35 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // Users collection
     match /users/{userId} {
-      // Users can only read/write their own profile
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      
-      // Owners can read all users, coaches can read users
-      allow read: if request.auth != null && 
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner' ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'coach');
-         
-      // Only owners can update user roles
-      allow update: if request.auth != null && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner' &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role']);
+      // Any authenticated user can read their own profile
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // Owners can read all user profiles
+      allow read: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner';
+
+      // Create own profile (any role value allowed — client code controls the actual role assigned)
+      allow create: if request.auth != null && request.auth.uid == userId;
+
+      // Owners can create profiles for other users (e.g., creating coach accounts)
+      allow create: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner';
+
+      // Self update own profile:
+      //   - can update any field EXCEPT role... unless:
+      //     a) bootstrap email is setting their own role to owner, OR
+      //     b) user is already owner
+      allow update: if request.auth != null &&
+        request.auth.uid == userId &&
+        (
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) ||
+          resource.data.email == 'f14agui@gmail.com' ||
+          resource.data.role == 'owner'
+        );
+
+      // Owners can update any user's document
+      allow update: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner';
     }
     
     // Training Plans collection

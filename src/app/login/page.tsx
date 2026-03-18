@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { LoginForm } from '@/components/forms/LoginForm';
 import { LoginFormData } from '@/lib/validations/auth';
+import { loginUser } from '@/lib/firebase/auth';
+import { ensureUserProfile } from '@/lib/firebase/users';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,28 +18,38 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+      const { user, error: loginError } = await loginUser(data.email, data.password);
+
+      if (loginError || !user) {
+        throw new Error(loginError || 'Error al iniciar sesión');
+      }
+
+      const userProfile = await ensureUserProfile({
+        uid: user.uid,
+        email: user.email || data.email,
+        displayName: user.displayName || '',
       });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Login failed');
-      }
+      const token = await user.getIdToken();
 
       // Store user data and token (in a real app, use a proper auth context)
-      if (result.data?.token) {
-        localStorage.setItem('authToken', result.data.token);
-        localStorage.setItem('user', JSON.stringify(result.data.user));
-      }
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('user', JSON.stringify({
+        id: userProfile.id,
+        email: userProfile.email,
+        firstName: userProfile.firstName,
+        lastName: userProfile.lastName,
+        displayName: userProfile.displayName,
+        role: userProfile.role,
+        mustChangePassword: userProfile.mustChangePassword ?? false,
+      }));
 
-      // Redirect to dashboard
-      router.push('/app/dashboard');
+      // Redirect to change-password page if required, otherwise dashboard
+      if (userProfile.mustChangePassword) {
+        router.push('/app/change-password');
+      } else {
+        router.push('/app/dashboard');
+      }
     } catch (error: any) {
       setError(error.message);
     } finally {
@@ -71,7 +83,7 @@ export default function LoginPage() {
             href="/"
             className="text-sm text-muted-foreground hover:text-foreground"
           >
-            ← Back to Home
+            ← Volver al inicio
           </Link>
         </div>
       </div>

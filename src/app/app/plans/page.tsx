@@ -87,24 +87,24 @@ export default function PlansPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Purchase failed');
+        throw new Error(result.error || 'La compra ha fallado');
       }
 
       // Refresh user access
       await loadUserAccess();
       
-      alert('Purchase successful! You now have access to this plan.');
+      alert('¡Compra realizada con éxito! Ya tienes acceso a este plan.');
     } catch (error: any) {
-      alert(`Purchase failed: ${error.message}`);
+      alert(`La compra ha fallado: ${error.message}`);
     }
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Training Plans</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Planes de Entrenamiento</h1>
         <p className="text-muted-foreground">
-          Discover professional training programs from certified coaches
+          Descubre programas de entrenamiento profesionales de coaches certificados
         </p>
       </div>
 

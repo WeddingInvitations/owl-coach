@@ -31,16 +31,16 @@ export function GroupCard({
         />
         <div className="absolute top-4 left-4">
           <Badge variant="info">
-            📦 Package
+            📦 Paquete
           </Badge>
         </div>
         <div className="absolute top-4 right-4">
           <Badge variant={group.isPublished ? 'success' : 'warning'}>
-            {group.isPublished ? 'Published' : 'Draft'}
+            {group.isPublished ? 'Publicado' : 'Borrador'}
           </Badge>
         </div>
         <div className="absolute bottom-4 left-4 bg-black/70 text-white px-2 py-1 rounded text-sm">
-          {group.includedPlanIds.length} Plans Included
+          {group.includedPlanIds.length} Planes Incluidos
         </div>
       </div>
 
@@ -61,7 +61,7 @@ export function GroupCard({
               {formatPrice(group.price, group.currency)}
             </div>
             <div className="text-xs text-muted-foreground">
-              Bundle Price
+              Precio del Paquete
             </div>
           </div>
         </div>
@@ -76,11 +76,11 @@ export function GroupCard({
         <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-4">
           <div className="flex items-center space-x-1">
             <span>📚</span>
-            <span>{group.includedPlanIds.length} training plans</span>
+            <span>{group.includedPlanIds.length} planes de entrenamiento</span>
           </div>
           <div className="flex items-center space-x-1">
             <span>💰</span>
-            <span>Bundle savings</span>
+            <span>Ahorro en paquete</span>
           </div>
         </div>
 
@@ -88,7 +88,7 @@ export function GroupCard({
         <div className="flex space-x-2">
           <Link href={`/app/groups/${group.slug}`} className="flex-1">
             <Button variant="outline" className="w-full">
-              View Details
+              Ver Detalles
             </Button>
           </Link>
 
@@ -97,14 +97,14 @@ export function GroupCard({
               onClick={() => onPurchase?.(group.id)}
               className="flex-1"
             >
-              Purchase Bundle
+              Comprar Paquete
             </Button>
           )}
 
           {userHasAccess && (
             <Link href={`/app/groups/${group.slug}?access=true`} className="flex-1">
               <Button className="w-full">
-                Access Plans
+                Acceder a los Planes
               </Button>
             </Link>
           )}
@@ -112,7 +112,7 @@ export function GroupCard({
           {showManageButton && (
             <Link href={`/app/coach/groups/${group.id}/edit`} className="flex-1">
               <Button variant="secondary" className="w-full">
-                Manage
+                Gestionar
               </Button>
             </Link>
           )}

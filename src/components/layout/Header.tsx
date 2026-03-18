@@ -52,7 +52,7 @@ export function Header({ user }: HeaderProps) {
                 isActive('/app/dashboard') ? 'text-primary' : 'text-muted-foreground'
               }`}
             >
-              Dashboard
+              Inicio
             </Link>
             <Link 
               href="/app/plans"
@@ -60,7 +60,7 @@ export function Header({ user }: HeaderProps) {
                 isActive('/app/plans') ? 'text-primary' : 'text-muted-foreground'
               }`}
             >
-              Plans
+              Planes
             </Link>
             <Link 
               href="/app/groups"
@@ -68,7 +68,7 @@ export function Header({ user }: HeaderProps) {
                 isActive('/app/groups') ? 'text-primary' : 'text-muted-foreground'
               }`}
             >
-              Groups
+              Paquetes
             </Link>
             <Link 
               href="/app/my-library"
@@ -76,7 +76,7 @@ export function Header({ user }: HeaderProps) {
                 isActive('/app/my-library') ? 'text-primary' : 'text-muted-foreground'
               }`}
             >
-              My Library
+              Mi Biblioteca
             </Link>
 
             {/* Role-based navigation */}
@@ -87,7 +87,7 @@ export function Header({ user }: HeaderProps) {
                   isActive('/app/admin') ? 'text-primary' : 'text-muted-foreground'
                 }`}
               >
-                Admin
+                Administración
               </Link>
             )}
 
@@ -98,7 +98,7 @@ export function Header({ user }: HeaderProps) {
                   isActive('/app/coach') ? 'text-primary' : 'text-muted-foreground'
                 }`}
               >
-                Coach Panel
+                Panel Coach
               </Link>
             )}
           </nav>
@@ -118,7 +118,7 @@ export function Header({ user }: HeaderProps) {
                   onClick={handleLogout}
                   className="text-sm"
                 >
-                  Logout
+                  Cerrar sesión
                 </Button>
               </div>
             )}

@@ -17,10 +17,10 @@ export default function HomePage() {
             </div>
             <div className="flex items-center space-x-4">
               <Link href="/login">
-                <Button variant="ghost">Login</Button>
+                <Button variant="ghost">Iniciar sesión</Button>
               </Link>
               <Link href="/register">
-                <Button>Get Started</Button>
+                <Button>Comenzar</Button>
               </Link>
             </div>
           </div>
@@ -31,20 +31,20 @@ export default function HomePage() {
       <section className="py-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-5xl font-bold tracking-tight mb-6">
-            Professional Training Plans
+            Planes de Entrenamiento Profesionales
             <br />
-            <span className="text-primary">Made Simple</span>
+            <span className="text-primary">Simples y Efectivos</span>
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Discover expertly crafted training programs from certified coaches. 
-            Purchase individual plans or complete training packages.
+            Descubre programas de entrenamiento diseñados por coaches certificados.
+            Compra planes individuales o paquetes completos de entrenamiento.
           </p>
           <div className="flex justify-center space-x-4">
             <Link href="/app/plans">
-              <Button size="lg">Browse Plans</Button>
+              <Button size="lg">Ver Planes</Button>
             </Link>
             <Link href="/register">
-              <Button size="lg" variant="outline">Start Coaching</Button>
+              <Button size="lg" variant="outline">Empezar a Entrenar</Button>
             </Link>
           </div>
         </div>
@@ -54,20 +54,20 @@ export default function HomePage() {
       <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">
-            Everything You Need to Succeed
+            Todo lo que Necesitas para Triunfar
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <span className="text-2xl">📚</span>
-                  <span>Expert Content</span>
+                  <span>Contenido Experto</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription>
-                  Access professionally designed training plans from certified coaches 
-                  with years of experience.
+                  Accede a planes de entrenamiento diseñados por coaches certificados
+                  con años de experiencia.
                 </CardDescription>
               </CardContent>
             </Card>
@@ -76,13 +76,13 @@ export default function HomePage() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <span className="text-2xl">🔒</span>
-                  <span>Premium Access</span>
+                  <span>Acceso Premium</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription>
-                  Purchase individual plans or complete packages. 
-                  Access your content anytime, anywhere.
+                  Compra planes individuales o paquetes completos.
+                  Accede a tu contenido en cualquier momento y lugar.
                 </CardDescription>
               </CardContent>
             </Card>
@@ -91,13 +91,13 @@ export default function HomePage() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <span className="text-2xl">🎯</span>
-                  <span>Structured Learning</span>
+                  <span>Aprendizaje Estructurado</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription>
-                  Follow step-by-step modules with detailed exercises, 
-                  instructions, and progress tracking.
+                  Sigue módulos paso a paso con ejercicios detallados,
+                  instrucciones y seguimiento del progreso.
                 </CardDescription>
               </CardContent>
             </Card>
@@ -111,18 +111,18 @@ export default function HomePage() {
           <Card className="max-w-2xl mx-auto">
             <CardContent className="py-12">
               <h3 className="text-2xl font-bold mb-4">
-                Ready to Start Your Training Journey?
+                ¿Listo para Comenzar tu Viaje de Entrenamiento?
               </h3>
               <p className="text-muted-foreground mb-6">
-                Join thousands of athletes and fitness enthusiasts who trust our platform 
-                for their training needs.
+                Únete a miles de atletas y entusiastas del fitness que confían en nuestra
+                plataforma para sus necesidades de entrenamiento.
               </p>
               <div className="flex justify-center space-x-4">
                 <Link href="/register">
-                  <Button size="lg">Create Account</Button>
+                  <Button size="lg">Crear Cuenta</Button>
                 </Link>
                 <Link href="/app/plans">
-                  <Button size="lg" variant="outline">Explore Plans</Button>
+                  <Button size="lg" variant="outline">Explorar Planes</Button>
                 </Link>
               </div>
             </CardContent>
@@ -141,7 +141,7 @@ export default function HomePage() {
               <span className="font-semibold">Owl Coach</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2026 Owl Coach. All rights reserved.
+              © 2026 Owl Coach. Todos los derechos reservados.
             </p>
           </div>
         </div>

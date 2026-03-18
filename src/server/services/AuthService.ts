@@ -1,6 +1,14 @@
 import { usersRepository } from '../repositories/UsersRepository';
-import { User, CreateUserData } from '@/types/user';
+import { User, CreateUserData, UserRole } from '@/types/user';
 import { AuthUser } from '@/types/auth';
+
+function resolveRole(email: string): UserRole {
+  const ownerEmails = (process.env.OWNER_EMAILS || '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  return ownerEmails.includes(email.toLowerCase()) ? 'owner' : 'user';
+}
 
 export class AuthService {
   async createUserProfile(
@@ -14,7 +22,7 @@ export class AuthService {
       firstName,
       lastName,
       displayName: `${firstName} ${lastName}`,
-      role: 'user', // Default role
+      role: resolveRole(email),
     };
 
     await usersRepository.createUser(uid, userData);
@@ -52,6 +60,13 @@ export class AuthService {
       const lastName = nameParts.slice(1).join(' ') || '';
       
       user = await this.createUserProfile(uid, email, firstName, lastName);
+    } else {
+      // Upgrade role if email is in OWNER_EMAILS but stored role is lower
+      const expectedRole = resolveRole(email);
+      if (expectedRole === 'owner' && user.role !== 'owner') {
+        await usersRepository.updateUser(uid, { role: 'owner' });
+        user = { ...user, role: 'owner' };
+      }
     }
 
     return user;

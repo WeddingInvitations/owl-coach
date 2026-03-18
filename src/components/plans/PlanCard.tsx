@@ -71,14 +71,14 @@ export function PlanCard({
               <span className="text-xs">📚</span>
             </div>
             <span className="text-sm text-muted-foreground">
-              {plan.previewModules.length} preview modules, {plan.fullModules.length} total modules
+              {plan.previewModules.length} módulos de vista previa, {plan.fullModules.length} módulos en total
             </span>
           </div>
 
           {/* Status */}
           {isOwned && (
             <Badge variant="success" className="w-fit">
-              ✓ Owned
+              ✓ Adquirido
             </Badge>
           )}
         </div>
@@ -88,7 +88,7 @@ export function PlanCard({
         <div className="w-full space-y-2">
           <Link href={`/app/plans/${plan.slug}`} className="block w-full">
             <Button variant="outline" className="w-full">
-              View Details
+              Ver Detalles
             </Button>
           </Link>
           
@@ -99,14 +99,14 @@ export function PlanCard({
               loading={purchasing}
               disabled={!plan.isPublished}
             >
-              {plan.isPublished ? 'Purchase Plan' : 'Not Available'}
+              {plan.isPublished ? 'Comprar Plan' : 'No Disponible'}
             </Button>
           )}
           
           {isOwned && (
             <Link href={`/app/plans/${plan.slug}?access=true`} className="block w-full">
               <Button className="w-full">
-                Start Training
+                Comenzar Entrenamiento
               </Button>
             </Link>
           )}

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { AuthUser } from '@/types/auth';
+import { getUserProfile } from '@/lib/firebase/users';
 
 export default function AdminLayout({
   children,
@@ -15,24 +16,50 @@ export default function AdminLayout({
   const [user, setUser] = React.useState<AuthUser | null>(null);
 
   React.useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      const parsedUser = JSON.parse(userData);
-      setUser(parsedUser);
-      
-      // Check if user is owner
-      if (parsedUser.role !== 'owner') {
-        window.location.href = '/app/dashboard';
+    let isMounted = true;
+
+    const verifyOwner = async () => {
+      const userData = localStorage.getItem('user');
+      if (!userData) {
+        window.location.href = '/login';
+        return;
       }
-    } else {
-      window.location.href = '/login';
-    }
+
+      const parsedUser = JSON.parse(userData);
+      const profile = await getUserProfile(parsedUser.id);
+
+      if (!profile || profile.role !== 'owner') {
+        window.location.href = '/app/dashboard';
+        return;
+      }
+
+      if (isMounted) {
+        const syncedUser: AuthUser = {
+          id: profile.id,
+          email: profile.email,
+          firstName: profile.firstName,
+          lastName: profile.lastName,
+          displayName: profile.displayName,
+          role: profile.role,
+        };
+        setUser(syncedUser);
+        localStorage.setItem('user', JSON.stringify(syncedUser));
+      }
+    };
+
+    verifyOwner().catch(() => {
+      window.location.href = '/app/dashboard';
+    });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   if (!user || user.role !== 'owner') {
     return (
       <div className="flex justify-center py-12">
-        <div>Loading...</div>
+        <div>Cargando...</div>
       </div>
     );
   }
@@ -46,10 +73,10 @@ export default function AdminLayout({
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <span className="text-2xl">⚙️</span>
-            <span>Admin Panel</span>
+            <span>Panel de Administración</span>
           </CardTitle>
           <CardDescription>
-            Platform administration and management tools
+            Herramientas de administración y gestión de la plataforma
           </CardDescription>
         </CardHeader>
       </Card>
@@ -62,8 +89,8 @@ export default function AdminLayout({
           }`}>
             <CardContent className="p-4 text-center">
               <div className="text-2xl mb-2">👥</div>
-              <div className="font-medium">Users</div>
-              <div className="text-xs text-muted-foreground">Manage users & roles</div>
+              <div className="font-medium">Usuarios</div>
+              <div className="text-xs text-muted-foreground">Gestionar usuarios y roles</div>
             </CardContent>
           </Card>
         </Link>
@@ -74,8 +101,8 @@ export default function AdminLayout({
           }`}>
             <CardContent className="p-4 text-center">
               <div className="text-2xl mb-2">📚</div>
-              <div className="font-medium">Plans</div>
-              <div className="text-xs text-muted-foreground">All training plans</div>
+              <div className="font-medium">Planes</div>
+              <div className="text-xs text-muted-foreground">Todos los planes de entrenamiento</div>
             </CardContent>
           </Card>
         </Link>
@@ -86,8 +113,8 @@ export default function AdminLayout({
           }`}>
             <CardContent className="p-4 text-center">
               <div className="text-2xl mb-2">📦</div>
-              <div className="font-medium">Groups</div>
-              <div className="text-xs text-muted-foreground">Plan packages</div>
+              <div className="font-medium">Paquetes</div>
+              <div className="text-xs text-muted-foreground">Paquetes de planes</div>
             </CardContent>
           </Card>
         </Link>
@@ -95,8 +122,8 @@ export default function AdminLayout({
         <Card className="cursor-not-allowed opacity-60">
           <CardContent className="p-4 text-center">
             <div className="text-2xl mb-2">📊</div>
-            <div className="font-medium">Analytics</div>
-            <div className="text-xs text-muted-foreground">Coming soon</div>
+              <div className="font-medium">Analíticas</div>
+              <div className="text-xs text-muted-foreground">Próximamente</div>
           </CardContent>
         </Card>
       </div>

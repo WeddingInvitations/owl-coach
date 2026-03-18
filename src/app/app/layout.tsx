@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { Header } from '@/components/layout/Header';
 import { AuthUser } from '@/types/auth';
+import { getUserProfile } from '@/lib/firebase/users';
 
 export default function AppLayout({
   children,
@@ -13,23 +14,44 @@ export default function AppLayout({
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    // Check if user is authenticated
-    const token = localStorage.getItem('authToken');
-    const userData = localStorage.getItem('user');
+    const syncUser = async () => {
+      const token = localStorage.getItem('authToken');
+      const userData = localStorage.getItem('user');
 
-    if (token && userData) {
+      if (!(token && userData)) {
+        setLoading(false);
+        return;
+      }
+
       try {
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
+        const parsedUser = JSON.parse(userData) as AuthUser;
+        const profile = await getUserProfile(parsedUser.id);
+
+        if (profile) {
+          const syncedUser: AuthUser = {
+            id: profile.id,
+            email: profile.email,
+            firstName: profile.firstName,
+            lastName: profile.lastName,
+            displayName: profile.displayName,
+            role: profile.role,
+          };
+
+          setUser(syncedUser);
+          localStorage.setItem('user', JSON.stringify(syncedUser));
+        } else {
+          setUser(parsedUser);
+        }
       } catch (error) {
-        console.error('Error parsing user data:', error);
-        // Clear invalid data
+        console.error('Error syncing user data:', error);
         localStorage.removeItem('authToken');
         localStorage.removeItem('user');
+      } finally {
+        setLoading(false);
       }
-    }
+    };
 
-    setLoading(false);
+    syncUser();
   }, []);
 
   if (loading) {

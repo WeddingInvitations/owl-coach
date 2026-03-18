@@ -26,9 +26,9 @@ export function LoginForm({ onSubmit, loading = false, error }: LoginFormProps) 
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Welcome Back</CardTitle>
+        <CardTitle>Bienvenido de nuevo</CardTitle>
         <CardDescription>
-          Sign in to your account to access your training plans
+          Inicia sesión para acceder a tus planes de entrenamiento
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -42,15 +42,15 @@ export function LoginForm({ onSubmit, loading = false, error }: LoginFormProps) 
           <Input
             label="Email"
             type="email"
-            placeholder="Enter your email"
+            placeholder="Introduce tu email"
             error={errors.email?.message}
             {...register('email')}
           />
 
           <Input
-            label="Password"
+            label="Contraseña"
             type="password"
-            placeholder="Enter your password"
+            placeholder="Introduce tu contraseña"
             error={errors.password?.message}
             {...register('password')}
           />
@@ -60,18 +60,18 @@ export function LoginForm({ onSubmit, loading = false, error }: LoginFormProps) 
             className="w-full"
             loading={loading}
           >
-            Sign In
+            Iniciar sesión
           </Button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-muted-foreground">
-            Don't have an account?{' '}
+            ¿No tienes cuenta?{' '}
             <a
               href="/register"
               className="font-medium text-primary hover:text-primary/80"
             >
-              Sign up
+              Regístrate
             </a>
           </p>
         </div>

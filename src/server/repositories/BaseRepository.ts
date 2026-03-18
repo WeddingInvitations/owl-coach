@@ -1,61 +1,49 @@
 import { 
-  getDocument, 
-  getDocuments, 
-  createDocument, 
-  updateDocument, 
-  deleteDocument 
-} from '@/lib/firebase/firestore';
-import { where, orderBy, limit, QueryConstraint } from 'firebase/firestore';
+  adminGetDocument,
+  adminGetDocuments,
+  adminCreateDocument,
+  adminUpdateDocument,
+  adminDeleteDocument,
+} from '@/lib/firebase/firestore-admin';
 
 export interface QueryOptions {
   orderBy?: { field: string; direction: 'asc' | 'desc' };
   limit?: number;
-  filters?: Array<{ field: string; operator: any; value: any }>;
+  filters?: Array<{ field: string; operator: FirebaseFirestore.WhereFilterOp; value: unknown }>;
 }
 
 export abstract class BaseRepository<T extends { id: string }> {
   protected abstract collectionName: string;
 
   async getById(id: string): Promise<T | null> {
-    return await getDocument<T>(this.collectionName, id);
+    return await adminGetDocument<T>(this.collectionName, id);
   }
 
   async getAll(options: QueryOptions = {}): Promise<T[]> {
-    const constraints: QueryConstraint[] = [];
+    return await adminGetDocuments<T>(
+      this.collectionName,
+      options.filters,
+      options.orderBy,
+      options.limit,
+    );
+  }
 
-    if (options.filters) {
-      options.filters.forEach(filter => {
-        constraints.push(where(filter.field, filter.operator, filter.value));
-      });
-    }
-
-    if (options.orderBy) {
-      constraints.push(orderBy(options.orderBy.field, options.orderBy.direction));
-    }
-
-    if (options.limit) {
-      constraints.push(limit(options.limit));
-    }
-
-    return await getDocuments<T>(this.collectionName, constraints);
+  async getByField(field: string, value: unknown): Promise<T[]> {
+    return await adminGetDocuments<T>(this.collectionName, [
+      { field, operator: '==', value },
+    ]);
   }
 
   async create(id: string, data: Omit<T, 'id'>): Promise<void> {
-    await createDocument<T>(this.collectionName, id, data);
+    await adminCreateDocument<T>(this.collectionName, id, data);
   }
 
   async update(id: string, data: Partial<T>): Promise<void> {
-    await updateDocument<T>(this.collectionName, id, data);
+    await adminUpdateDocument<T>(this.collectionName, id, data);
   }
 
   async delete(id: string): Promise<void> {
-    await deleteDocument(this.collectionName, id);
-  }
-
-  async getByField(field: string, value: any): Promise<T[]> {
-    return await this.getAll({
-      filters: [{ field, operator: '==', value }]
-    });
+    await adminDeleteDocument(this.collectionName, id);
   }
 
   async exists(id: string): Promise<boolean> {

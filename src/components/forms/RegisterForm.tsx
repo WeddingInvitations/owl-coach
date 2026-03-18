@@ -26,9 +26,9 @@ export function RegisterForm({ onSubmit, loading = false, error }: RegisterFormP
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Create Account</CardTitle>
+        <CardTitle>Crear Cuenta</CardTitle>
         <CardDescription>
-          Join our platform to access premium training plans
+          Únete a nuestra plataforma para acceder a planes de entrenamiento premium
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -40,9 +40,9 @@ export function RegisterForm({ onSubmit, loading = false, error }: RegisterFormP
           )}
 
           <Input
-            label="Display Name"
+            label="Nombre"
             type="text"
-            placeholder="Enter your name"
+            placeholder="Introduce tu nombre"
             error={errors.displayName?.message}
             {...register('displayName')}
           />
@@ -50,23 +50,23 @@ export function RegisterForm({ onSubmit, loading = false, error }: RegisterFormP
           <Input
             label="Email"
             type="email"
-            placeholder="Enter your email"
+            placeholder="Introduce tu email"
             error={errors.email?.message}
             {...register('email')}
           />
 
           <Input
-            label="Password"
+            label="Contraseña"
             type="password"
-            placeholder="Create a password"
+            placeholder="Crea una contraseña"
             error={errors.password?.message}
             {...register('password')}
           />
 
           <Input
-            label="Confirm Password"
+            label="Confirmar Contraseña"
             type="password"
-            placeholder="Confirm your password"
+            placeholder="Confirma tu contraseña"
             error={errors.confirmPassword?.message}
             {...register('confirmPassword')}
           />
@@ -76,18 +76,18 @@ export function RegisterForm({ onSubmit, loading = false, error }: RegisterFormP
             className="w-full"
             loading={loading}
           >
-            Create Account
+            Crear Cuenta
           </Button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-muted-foreground">
-            Already have an account?{' '}
+            ¿Ya tienes cuenta?{' '}
             <a
               href="/login"
               className="font-medium text-primary hover:text-primary/80"
             >
-              Sign in
+              Inicia sesión
             </a>
           </p>
         </div>
