@@ -2,36 +2,36 @@ import { z } from 'zod';
 
 export const exerciseSchema = z.object({
   id: z.string(),
-  name: z.string().min(1, 'Exercise name is required'),
-  description: z.string().min(1, 'Exercise description is required'),
-  sets: z.number().min(1, 'Sets must be at least 1'),
-  reps: z.string().min(1, 'Reps are required'),
-  restTime: z.number().min(0, 'Rest time must be 0 or more'),
+  name: z.string().min(1, 'El nombre del ejercicio es requerido'),
+  description: z.string().min(1, 'La descripción del ejercicio es requerida'),
+  sets: z.number().min(1, 'Las series deben ser al menos 1'),
+  reps: z.string().min(1, 'Las repeticiones son requeridas'),
+  restTime: z.number().min(0, 'El tiempo de descanso debe ser 0 o más'),
   videoUrl: z.string().url().optional().or(z.literal('')),
   imageUrl: z.string().url().optional().or(z.literal('')),
-  instructions: z.array(z.string()).min(1, 'At least one instruction is required'),
+  instructions: z.array(z.string()).min(1, 'Al menos una instrucción es requerida'),
 });
 
 export const trainingModuleSchema = z.object({
   id: z.string(),
-  title: z.string().min(1, 'Module title is required'),
-  description: z.string().min(1, 'Module description is required'),
-  exercises: z.array(exerciseSchema).min(1, 'At least one exercise is required'),
-  estimatedDuration: z.number().min(1, 'Duration must be at least 1 minute'),
+  title: z.string().min(1, 'El título del módulo es requerido'),
+  description: z.string().min(1, 'La descripción del módulo es requerida'),
+  exercises: z.array(exerciseSchema).min(1, 'Al menos un ejercicio es requerido'),
+  estimatedDuration: z.number().min(1, 'La duración debe ser al menos 1 minuto'),
 });
 
 export const createTrainingPlanSchema = z.object({
-  title: z.string().min(1, 'Plan title is required'),
-  shortDescription: z.string().min(1, 'Short description is required'),
-  fullDescription: z.string().min(1, 'Full description is required'),
-  coverImage: z.string().url('Cover image must be a valid URL'),
+  title: z.string().min(1, 'El título del plan es requerido'),
+  shortDescription: z.string().min(1, 'La descripción corta es requerida'),
+  fullDescription: z.string().min(1, 'La descripción completa es requerida'),
+  coverImage: z.string().url('La imagen de portada debe ser una URL válida'),
   difficulty: z.enum(['beginner', 'intermediate', 'advanced']),
-  duration: z.number().min(1, 'Duration must be at least 1 week'),
-  price: z.number().min(0, 'Price must be 0 or more'),
+  duration: z.number().min(1, 'La duración debe ser al menos 1 semana'),
+  price: z.number().min(0, 'El precio debe ser 0 o más'),
   currency: z.enum(['USD', 'EUR']),
-  categoryIds: z.array(z.string()).min(1, 'At least one category is required'),
-  previewModules: z.array(trainingModuleSchema).min(1, 'At least one preview module is required'),
-  fullModules: z.array(trainingModuleSchema).min(1, 'At least one full module is required'),
+  categoryIds: z.array(z.string()).min(1, 'Al menos una categoría es requerida'),
+  previewModules: z.array(trainingModuleSchema).min(1, 'Al menos un módulo de vista previa es requerido'),
+  fullModules: z.array(trainingModuleSchema).min(1, 'Al menos un módulo completo es requerido'),
 });
 
 export const updateTrainingPlanSchema = createTrainingPlanSchema.partial().extend({

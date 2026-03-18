@@ -10,11 +10,12 @@ import { loginSchema, LoginFormData } from '@/lib/validations/auth';
 
 interface LoginFormProps {
   onSubmit: (data: LoginFormData) => Promise<void>;
+  onGoogleSignIn?: () => Promise<void>;
   loading?: boolean;
   error?: string;
 }
 
-export function LoginForm({ onSubmit, loading = false, error }: LoginFormProps) {
+export function LoginForm({ onSubmit, onGoogleSignIn, loading = false, error }: LoginFormProps) {
   const {
     register,
     handleSubmit,
@@ -62,6 +63,18 @@ export function LoginForm({ onSubmit, loading = false, error }: LoginFormProps) 
           >
             Iniciar sesión
           </Button>
+
+          {onGoogleSignIn && (
+            <Button
+              type="button"
+              className="w-full"
+              variant="outline"
+              onClick={onGoogleSignIn}
+              disabled={loading}
+            >
+              Continuar con Google
+            </Button>
+          )}
         </form>
 
         <div className="mt-6 text-center">

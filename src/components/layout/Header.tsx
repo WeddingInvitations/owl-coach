@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { AuthUser } from '@/types/auth';
+import { logoutUser } from '@/lib/firebase/auth';
 
 interface HeaderProps {
   user?: AuthUser;
@@ -17,7 +18,7 @@ export function Header({ user }: HeaderProps) {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await logoutUser();
       
       // Clear local storage
       localStorage.removeItem('authToken');

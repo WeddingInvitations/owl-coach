@@ -3,15 +3,43 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { User } from 'firebase/auth';
 import { LoginForm } from '@/components/forms/LoginForm';
 import { LoginFormData } from '@/lib/validations/auth';
-import { loginUser } from '@/lib/firebase/auth';
+import { loginUser, loginWithGoogle } from '@/lib/firebase/auth';
 import { ensureUserProfile } from '@/lib/firebase/users';
 
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string>('');
+
+  const completeLogin = async (firebaseUser: User, fallbackEmail: string = '') => {
+    const userProfile = await ensureUserProfile({
+      uid: firebaseUser.uid,
+      email: firebaseUser.email || fallbackEmail,
+      displayName: firebaseUser.displayName || '',
+    });
+
+    const token = await firebaseUser.getIdToken();
+
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('user', JSON.stringify({
+      id: userProfile.id,
+      email: userProfile.email,
+      firstName: userProfile.firstName,
+      lastName: userProfile.lastName,
+      displayName: userProfile.displayName,
+      role: userProfile.role,
+      mustChangePassword: userProfile.mustChangePassword ?? false,
+    }));
+
+    if (userProfile.mustChangePassword) {
+      router.push('/app/change-password');
+    } else {
+      router.push('/app/dashboard');
+    }
+  };
 
   const handleLogin = async (data: LoginFormData) => {
     setLoading(true);
@@ -24,32 +52,26 @@ export default function LoginPage() {
         throw new Error(loginError || 'Error al iniciar sesión');
       }
 
-      const userProfile = await ensureUserProfile({
-        uid: user.uid,
-        email: user.email || data.email,
-        displayName: user.displayName || '',
-      });
+      await completeLogin(user, data.email);
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      const token = await user.getIdToken();
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError('');
 
-      // Store user data and token (in a real app, use a proper auth context)
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('user', JSON.stringify({
-        id: userProfile.id,
-        email: userProfile.email,
-        firstName: userProfile.firstName,
-        lastName: userProfile.lastName,
-        displayName: userProfile.displayName,
-        role: userProfile.role,
-        mustChangePassword: userProfile.mustChangePassword ?? false,
-      }));
+    try {
+      const { user, error: loginError } = await loginWithGoogle();
 
-      // Redirect to change-password page if required, otherwise dashboard
-      if (userProfile.mustChangePassword) {
-        router.push('/app/change-password');
-      } else {
-        router.push('/app/dashboard');
+      if (loginError || !user) {
+        throw new Error(loginError || 'Error al iniciar sesión con Google');
       }
+
+      await completeLogin(user);
     } catch (error: any) {
       setError(error.message);
     } finally {
@@ -73,6 +95,7 @@ export default function LoginPage() {
         {/* Login Form */}
         <LoginForm
           onSubmit={handleLogin}
+          onGoogleSignIn={handleGoogleLogin}
           loading={loading}
           error={error}
         />

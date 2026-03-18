@@ -9,21 +9,45 @@ import {
   updateProfile,
   getAuth,
   deleteUser,
+  GoogleAuthProvider,
+  signInWithPopup,
+  browserLocalPersistence,
+  setPersistence,
 } from 'firebase/auth';
 import { initializeApp, deleteApp } from 'firebase/app';
-import { getFirebaseApp, isFirebaseClientConfigured } from './config';
+import { getFirebaseApp, isFirebaseClientConfigured, getFirebaseClientConfig } from './config';
 
-function getClientAuth() {
+let authInstance: ReturnType<typeof getAuth> | null = null;
+let authInitPromise: Promise<ReturnType<typeof getAuth>> | null = null;
+
+async function getClientAuth() {
   if (!isFirebaseClientConfigured()) {
     throw new Error('Firebase client environment variables are not configured');
   }
 
-  return getAuth(getFirebaseApp());
+  if (authInstance) {
+    return authInstance;
+  }
+
+  if (!authInitPromise) {
+    const auth = getAuth(getFirebaseApp());
+    authInitPromise = setPersistence(auth, browserLocalPersistence)
+      .then(() => {
+        authInstance = auth;
+        return auth;
+      })
+      .catch((error) => {
+        authInitPromise = null;
+        throw error;
+      });
+  }
+
+  return authInitPromise;
 }
 
 export async function loginUser(email: string, password: string) {
   try {
-    const auth = getClientAuth();
+    const auth = await getClientAuth();
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return { user: userCredential.user, error: null };
   } catch (error: any) {
@@ -33,7 +57,7 @@ export async function loginUser(email: string, password: string) {
 
 export async function registerUser(email: string, password: string, displayName: string) {
   try {
-    const auth = getClientAuth();
+    const auth = await getClientAuth();
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     
     // Update the user's display name
@@ -47,9 +71,20 @@ export async function registerUser(email: string, password: string, displayName:
   }
 }
 
+export async function loginWithGoogle() {
+  try {
+    const auth = await getClientAuth();
+    const provider = new GoogleAuthProvider();
+    const userCredential = await signInWithPopup(auth, provider);
+    return { user: userCredential.user, error: null };
+  } catch (error: any) {
+    return { user: null, error: error.message };
+  }
+}
+
 export async function logoutUser() {
   try {
-    const auth = getClientAuth();
+    const auth = await getClientAuth();
     await signOut(auth);
     return { success: true, error: null };
   } catch (error: any) {
@@ -58,7 +93,11 @@ export async function logoutUser() {
 }
 
 export function getCurrentUser(): User | null {
-  const auth = getClientAuth();
+  if (!isFirebaseClientConfigured()) {
+    return null;
+  }
+
+  const auth = getAuth(getFirebaseApp());
   return auth.currentUser;
 }
 
@@ -70,7 +109,7 @@ export async function changeUserPassword(
   newPassword: string,
 ) {
   try {
-    const auth = getClientAuth();
+    const auth = await getClientAuth();
     const user = auth.currentUser;
     if (!user || !user.email) throw new Error('Usuario no autenticado');
 
@@ -92,14 +131,7 @@ export async function createAuthUserAsAdmin(
   password: string,
   displayName: string,
 ) {
-  const firebaseConfig = {
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  };
+  const firebaseConfig = getFirebaseClientConfig();
 
   const secondaryApp = initializeApp(firebaseConfig, `secondary-${Date.now()}`);
   const secondaryAuth = getAuth(secondaryApp);

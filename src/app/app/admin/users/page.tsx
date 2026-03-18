@@ -81,7 +81,7 @@ export default function AdminUsersPage() {
       setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
     } catch (updateError: any) {
       console.error('Error updating user role:', updateError);
-      setError('No tienes permisos para cambiar roles o ocurriÃ³ un error');
+      setError('No tienes permisos para cambiar roles o ocurrió un error');
     }
   };
 
@@ -95,7 +95,7 @@ export default function AdminUsersPage() {
       return;
     }
     if (tempPassword.length < 6) {
-      setCreateError('La contraseÃ±a temporal debe tener al menos 6 caracteres');
+      setCreateError('La contraseña temporal debe tener al menos 6 caracteres');
       return;
     }
     setCreating(true);
@@ -104,13 +104,13 @@ export default function AdminUsersPage() {
       if (authError || !uid) throw new Error(authError || 'Error al crear el usuario');
       const newUser = await createCoachProfile({ uid, email, firstName, lastName });
       setUsers((prev) => [...prev, newUser]);
-      setCreateSuccess(`Coach "${firstName} ${lastName}" creado. Al iniciar sesiÃ³n se le pedirÃ¡ cambiar la contraseÃ±a.`);
+      setCreateSuccess(`Coach "${firstName} ${lastName}" creado. Al iniciar sesión se le pedirá cambiar la contraseña.`);
       setCreateForm(EMPTY_FORM);
     } catch (err: any) {
       const msg = err.message || '';
       setCreateError(
         msg.includes('email-already-in-use')
-          ? 'Ya existe un usuario con ese correo electrÃ³nico'
+          ? 'Ya existe un usuario con ese correo electrónico'
           : msg || 'Error al crear el coach',
       );
     } finally {
@@ -145,11 +145,11 @@ export default function AdminUsersPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>GestiÃ³n de Usuarios</CardTitle>
+              <CardTitle>Gestión de Usuarios</CardTitle>
               <CardDescription>Gestiona cuentas de usuario y roles en la plataforma</CardDescription>
             </div>
             <Button onClick={() => { setShowCreateForm(!showCreateForm); setCreateError(''); setCreateSuccess(''); }}>
-              {showCreateForm ? 'Cancelar' : '+ AÃ±adir Coach'}
+              {showCreateForm ? 'Cancelar' : '+ Añadir Coach'}
             </Button>
           </div>
         </CardHeader>
@@ -171,9 +171,9 @@ export default function AdminUsersPage() {
                   onChange={(e) => setCreateForm((f) => ({ ...f, lastName: e.target.value }))} required />
               </div>
               <div className="grid gap-4 md:grid-cols-2">
-                <Input label="Correo electrÃ³nico" type="email" placeholder="coach@ejemplo.com" value={createForm.email}
+                <Input label="Correo electrónico" type="email" placeholder="coach@ejemplo.com" value={createForm.email}
                   onChange={(e) => setCreateForm((f) => ({ ...f, email: e.target.value }))} required />
-                <Input label="ContraseÃ±a temporal" type="text" placeholder="MÃ­nimo 6 caracteres" value={createForm.tempPassword}
+                <Input label="Contraseña temporal" type="text" placeholder="Mínimo 6 caracteres" value={createForm.tempPassword}
                   onChange={(e) => setCreateForm((f) => ({ ...f, tempPassword: e.target.value }))} required />
               </div>
               <div className="flex gap-3">
@@ -232,7 +232,7 @@ export default function AdminUsersPage() {
         <CardContent>
           {filteredUsers.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              {users.length === 0 ? 'No se encontraron usuarios' : 'NingÃºn usuario coincide con el filtro'}
+              {users.length === 0 ? 'No se encontraron usuarios' : 'Ningún usuario coincide con el filtro'}
             </div>
           ) : (
             <div className="space-y-3">
@@ -247,7 +247,7 @@ export default function AdminUsersPage() {
                         {user.firstName} {user.lastName}
                         {user.mustChangePassword && (
                           <span className="text-xs text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
-                            Pendiente cambio de contraseÃ±a
+                            Pendiente cambio de contraseña
                           </span>
                         )}
                       </div>

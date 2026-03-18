@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
 export const createTrainingPlanGroupSchema = z.object({
-  title: z.string().min(1, 'Group title is required'),
-  shortDescription: z.string().min(1, 'Short description is required'),
-  fullDescription: z.string().min(1, 'Full description is required'),
-  coverImage: z.string().url('Cover image must be a valid URL'),
-  includedPlanIds: z.array(z.string()).min(1, 'At least one plan must be included'),
-  price: z.number().min(0, 'Price must be 0 or more'),
+  title: z.string().min(1, 'El título del grupo es requerido'),
+  shortDescription: z.string().min(1, 'La descripción corta es requerida'),
+  fullDescription: z.string().min(1, 'La descripción completa es requerida'),
+  coverImage: z.string().url('La imagen de portada debe ser una URL válida'),
+  includedPlanIds: z.array(z.string()).min(1, 'Al menos un plan debe ser incluido'),
+  price: z.number().min(0, 'El precio debe ser 0 o más'),
   currency: z.enum(['USD', 'EUR']),
 });
 

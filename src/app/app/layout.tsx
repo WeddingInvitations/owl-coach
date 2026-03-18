@@ -3,7 +3,9 @@
 import * as React from 'react';
 import { Header } from '@/components/layout/Header';
 import { AuthUser } from '@/types/auth';
-import { getUserProfile } from '@/lib/firebase/users';
+import { onAuthStateChanged, getAuth } from 'firebase/auth';
+import { ensureUserProfile } from '@/lib/firebase/users';
+import { getFirebaseApp } from '@/lib/firebase/config';
 
 export default function AppLayout({
   children,
@@ -14,44 +16,51 @@ export default function AppLayout({
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    const syncUser = async () => {
-      const token = localStorage.getItem('authToken');
-      const userData = localStorage.getItem('user');
+    const auth = getAuth(getFirebaseApp());
 
-      if (!(token && userData)) {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (!firebaseUser) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+        setUser(undefined);
         setLoading(false);
         return;
       }
 
       try {
-        const parsedUser = JSON.parse(userData) as AuthUser;
-        const profile = await getUserProfile(parsedUser.id);
+        const profile = await ensureUserProfile({
+          uid: firebaseUser.uid,
+          email: firebaseUser.email || '',
+          displayName: firebaseUser.displayName || '',
+        });
 
-        if (profile) {
-          const syncedUser: AuthUser = {
-            id: profile.id,
-            email: profile.email,
-            firstName: profile.firstName,
-            lastName: profile.lastName,
-            displayName: profile.displayName,
-            role: profile.role,
-          };
+        const token = await firebaseUser.getIdToken();
+        const syncedUser: AuthUser = {
+          id: profile.id,
+          email: profile.email,
+          firstName: profile.firstName,
+          lastName: profile.lastName,
+          displayName: profile.displayName,
+          role: profile.role,
+        };
 
-          setUser(syncedUser);
-          localStorage.setItem('user', JSON.stringify(syncedUser));
-        } else {
-          setUser(parsedUser);
-        }
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('user', JSON.stringify({
+          ...syncedUser,
+          mustChangePassword: profile.mustChangePassword ?? false,
+        }));
+        setUser(syncedUser);
       } catch (error) {
         console.error('Error syncing user data:', error);
         localStorage.removeItem('authToken');
         localStorage.removeItem('user');
+        setUser(undefined);
       } finally {
         setLoading(false);
       }
-    };
+    });
 
-    syncUser();
+    return () => unsubscribe();
   }, []);
 
   if (loading) {

@@ -3,8 +3,9 @@
 set -e
 
 PROJECT_ID=${1:-""}
-REGION=${2:-"us-central1"}
-SERVICE_NAME="owl-coach"
+REGION=${2:-"europe-west1"}
+SERVICE_NAME="owl-coach-app"
+PUBLIC_FIREBASE_ENV_VARS="NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyAQ0zuspsoBEQ54rCDGTKbAeHM96DVl3ZU,NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=owl-coach.firebaseapp.com,NEXT_PUBLIC_FIREBASE_PROJECT_ID=owl-coach,NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=owl-coach.firebasestorage.app,NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=831473832501,NEXT_PUBLIC_FIREBASE_APP_ID=1:831473832501:web:2e88bf60073fe84947177c,NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-HBKC82DJ4Q"
 
 if [ -z "$PROJECT_ID" ]; then
   echo "❌ Error: Debes proporcionar PROJECT_ID"
@@ -29,8 +30,8 @@ gcloud run deploy "$SERVICE_NAME" \
   --port 8080 \
   --memory 512Mi \
   --cpu 1 \
-  --max-instances 10 \
-  --set-env-vars "NODE_ENV=production,NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyAQ0zuspsoBEQ54rCDGTKbAeHM96DVl3ZU,NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=owl-coach.firebaseapp.com,NEXT_PUBLIC_FIREBASE_PROJECT_ID=owl-coach,NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=owl-coach.firebasestorage.app,NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=831473832501,NEXT_PUBLIC_FIREBASE_APP_ID=1:831473832501:web:2e88bf60073fe84947177c,NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-HBKC82DJ4Q"
+  --max-instances 20 \
+  --set-env-vars "NODE_ENV=production,$PUBLIC_FIREBASE_ENV_VARS,OWNER_EMAILS=f14agui@gmail.com"
 
 SERVICE_URL=$(gcloud run services describe "$SERVICE_NAME" --region "$REGION" --format='value(status.url)')
 echo "✅ Despliegue completado"
