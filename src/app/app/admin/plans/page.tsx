@@ -42,9 +42,9 @@ export default function AdminPlansPage() {
     try {
       const response = await fetch('/api/plans');
       if (response.ok) {
-        const plansData: TrainingPlan[] = await response.json();
-        setPlans(plansData);
-        setFilteredPlans(plansData);
+        const { data } = await response.json();
+        setPlans(data);
+        setFilteredPlans(data);
       }
       setLoading(false);
     } catch (error) {
