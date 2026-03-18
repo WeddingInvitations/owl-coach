@@ -53,18 +53,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // For now, we'll assume the token is valid and contains the user ID
-    // In production, you'd verify the Firebase token
-    const userId = authHeader.replace('Bearer ', '');
-    
-    const userProfile = await authService.getUserProfile(userId);
-    if (!userProfile) {
-      return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 }
-      );
+    // Verifica el token de Firebase y extrae UID/email/displayName
+    const admin = (await import('firebase-admin')).default;
+    if (!admin.apps.length) {
+      admin.initializeApp();
     }
-
+    let decoded;
+    try {
+      decoded = await admin.auth().verifyIdToken(authHeader.replace('Bearer ', ''));
+    } catch (err) {
+      return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
+    }
+    const { uid, email, name } = decoded;
+    let userProfile = await authService.getUserProfile(uid);
+    if (!userProfile) {
+      // Crea el perfil si no existe
+      const displayName = name || '';
+      const emailVal = email || '';
+      const nameParts = displayName.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      userProfile = await authService.createUserProfile(uid, emailVal, firstName, lastName);
+    }
     requireCoach(userProfile.role);
 
     const body = await request.json();
