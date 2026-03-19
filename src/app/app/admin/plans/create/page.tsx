@@ -29,7 +29,13 @@ function CreatePlanPage() {
   const [selectedExistingModules, setSelectedExistingModules] = React.useState<string[]>([]);
 
   React.useEffect(() => {
-    fetch('/api/admin/modules')
+    const token = localStorage.getItem('authToken');
+    fetch('/api/admin/modules', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
       .then(res => res.json())
       .then(data => {
         if (data.success && Array.isArray(data.modules)) {
