@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { ConfirmModal } from '@/components/ui/Modal';
 import { User } from '@/types/user';
 import { UserRole } from '@/types/auth';
 import { getUserProfile, listUsers, setUserRole, createCoachProfile } from '@/lib/firebase/users';
@@ -77,6 +78,11 @@ export default function AdminUsersPage() {
   const updateUserRole = async (userId: string, newRole: UserRole) => {
     setError('');
     try {
+      const user = users.find((u) => u.id === userId);
+      if (user && user.role === 'user' && newRole !== 'user') {
+        setError('No puedes cambiar el tipo de usuario a owner o coach desde user');
+        return;
+      }
       await setUserRole(userId, newRole);
       setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
     } catch (updateError: any) {
@@ -84,6 +90,29 @@ export default function AdminUsersPage() {
       setError('No tienes permisos para cambiar roles o ocurrió un error');
     }
   };
+
+    const [confirmDeleteUserId, setConfirmDeleteUserId] = React.useState<string | null>(null);
+    const [deleting, setDeleting] = React.useState(false);
+    const deleteUser = async () => {
+      if (!confirmDeleteUserId) return;
+      setError('');
+      setDeleting(true);
+      try {
+        // Llama a la API backend para eliminar usuario completamente
+        await fetch('/api/admin/delete-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uid: confirmDeleteUserId }),
+        });
+        setUsers((prev) => prev.filter((u) => u.id !== confirmDeleteUserId));
+        setConfirmDeleteUserId(null);
+      } catch (deleteError: any) {
+        console.error('Error deleting user:', deleteError);
+        setError('No tienes permisos para eliminar usuarios o ocurrió un error');
+      } finally {
+        setDeleting(false);
+      }
+    };
 
   const handleCreateCoach = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -257,14 +286,15 @@ export default function AdminUsersPage() {
                   <div className="flex items-center gap-3 ml-4 shrink-0">
                     <Badge variant={getRoleBadgeVariant(user.role)}>{getRoleLabel(user.role)}</Badge>
                     <div className="flex gap-2">
-                      {user.role !== 'owner' && (
+                      {/* Only allow owner to change roles, and only if user is not 'user' */}
+                      {user.role !== 'owner' && user.role !== 'user' && (
                         <Button size="sm" variant="outline"
                           onClick={() => updateUserRole(user.id, 'owner')}
                           disabled={user.id === currentUserId}>
                           Owner
                         </Button>
                       )}
-                      {user.role !== 'coach' && (
+                      {user.role !== 'coach' && user.role !== 'user' && (
                         <Button size="sm" variant="outline"
                           onClick={() => updateUserRole(user.id, 'coach')}
                           disabled={user.id === currentUserId && user.role === 'owner'}>
@@ -278,6 +308,13 @@ export default function AdminUsersPage() {
                           Usuario
                         </Button>
                       )}
+                      {/* Delete user button for owners, not for self or other owners */}
+                      {user.role !== 'owner' && user.id !== currentUserId && (
+                        <Button size="sm" variant="destructive"
+                          onClick={() => setConfirmDeleteUserId(user.id)}>
+                          Eliminar
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -286,6 +323,20 @@ export default function AdminUsersPage() {
           )}
         </CardContent>
       </Card>
+      {/* Confirm Delete Modal */}
+      {confirmDeleteUserId && (
+        <ConfirmModal
+          isOpen={!!confirmDeleteUserId}
+          onClose={() => setConfirmDeleteUserId(null)}
+          onConfirm={deleteUser}
+          title="Confirmar eliminación"
+          description="¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer."
+          confirmLabel="Eliminar"
+          cancelLabel="Cancelar"
+          variant="destructive"
+          loading={deleting}
+        />
+      )}
     </div>
   );
 }
