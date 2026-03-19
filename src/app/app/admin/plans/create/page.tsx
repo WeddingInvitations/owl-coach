@@ -7,6 +7,14 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { TrainingPlan, TrainingModule, Exercise } from '@/types/training-plan';
+
+interface ExistingModule {
+  id: string;
+  name: string;
+  description: string;
+  estimatedDuration?: number;
+  exercises?: Exercise[];
+}
 import { createTrainingPlanSchema } from '@/lib/validations/plans';
 import { z } from 'zod';
 
@@ -15,8 +23,20 @@ type CreatePlanForm = z.infer<typeof createTrainingPlanSchema>;
 interface FieldError {
   [key: string]: string | undefined;
 }
+function CreatePlanPage() {
+  // ...existing code...
+  const [existingModules, setExistingModules] = React.useState<ExistingModule[]>([]);
+  const [selectedExistingModules, setSelectedExistingModules] = React.useState<string[]>([]);
 
-export default function CreatePlanPage() {
+  React.useEffect(() => {
+    fetch('/api/admin/modules')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && Array.isArray(data.modules)) {
+          setExistingModules(data.modules);
+        }
+      });
+  }, []);
   const router = useRouter();
   const [loading, setLoading] = React.useState(false);
   const [fieldErrors, setFieldErrors] = React.useState<FieldError>({});
@@ -183,21 +203,21 @@ export default function CreatePlanPage() {
       ...prev,
       previewModules: [...prev.previewModules, module]
     }));
+  };
 
-    setCurrentModule({
-      id: '',
-      title: '',
-      description: '',
-      exercises: [],
-      estimatedDuration: 0,
-    });
-
-    setFieldErrors(prev => ({ 
-      ...prev, 
-      moduleTitle: undefined, 
-      moduleDescription: undefined,
-      moduleExercises: undefined 
+  const addExistingModulesToPlan = () => {
+    const modulesToAdd = existingModules.filter(m => selectedExistingModules.includes(m.id));
+    setForm((prev: CreatePlanForm) => ({
+      ...prev,
+      previewModules: [...prev.previewModules, ...modulesToAdd.map(m => ({
+        id: m.id,
+        title: m.name,
+        description: m.description,
+        exercises: m.exercises || [],
+        estimatedDuration: m.estimatedDuration || 0,
+      }))]
     }));
+    setSelectedExistingModules([]);
   };
 
   const removeModule = (moduleId: string) => {
@@ -401,10 +421,38 @@ export default function CreatePlanPage() {
           <CardHeader>
             <CardTitle>Módulos de Entrenamiento</CardTitle>
             <CardDescription>
-              Crear módulos y ejercicios para tu plan de entrenamiento
+              Crear módulos y ejercicios para tu plan de entrenamiento o añadir módulos ya creados
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            {/* Existing Modules List */}
+            {existingModules.length > 0 && (
+              <div className="mb-6">
+                <h4 className="font-medium mb-2">Añadir módulos ya creados</h4>
+                <div className="space-y-2">
+                  {existingModules.map(mod => (
+                    <label key={mod.id} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedExistingModules.includes(mod.id)}
+                        onChange={e => {
+                          if (e.target.checked) {
+                            setSelectedExistingModules(prev => [...prev, mod.id]);
+                          } else {
+                            setSelectedExistingModules(prev => prev.filter(id => id !== mod.id));
+                          }
+                        }}
+                      />
+                      <span className="font-medium">{mod.name}</span>
+                      <span className="text-sm text-muted-foreground">{mod.description}</span>
+                    </label>
+                  ))}
+                </div>
+                <Button type="button" onClick={addExistingModulesToPlan} disabled={selectedExistingModules.length === 0} className="mt-2">
+                  Añadir módulos seleccionados al plan
+                </Button>
+              </div>
+            )}
             {/* Current Module Form */}
             <div className="border rounded-lg p-4 bg-muted/30">
               <h4 className="font-medium mb-4">Añadir Nuevo Módulo</h4>
@@ -625,3 +673,5 @@ export default function CreatePlanPage() {
     </div>
   );
 }
+
+export default CreatePlanPage;
