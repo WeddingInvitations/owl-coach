@@ -1,24 +1,26 @@
-import { collection, doc, setDoc, getDocs, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
-
+import { getFirestore } from 'firebase-admin/firestore';
+import adminApp from '@/lib/firebase-admin';
 export async function createModule(module: { name: string; description: string }) {
+  const db = getFirestore(adminApp);
   const now = new Date().toISOString();
-  const ref = doc(collection(db, 'modules'));
-  await setDoc(ref, { ...module, createdAt: now, updatedAt: now });
+  const ref = await db.collection('modules').add({ ...module, createdAt: now, updatedAt: now });
   return { id: ref.id, ...module };
 }
 
 export async function listModules() {
-  const snap = await getDocs(collection(db, 'modules'));
+  const db = getFirestore(adminApp);
+  const snap = await db.collection('modules').get();
   return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
 export async function updateModule(id: string, data: Partial<{ name: string; description: string }>) {
-  const ref = doc(db, 'modules', id);
-  await updateDoc(ref, { ...data, updatedAt: new Date().toISOString() });
+  const db = getFirestore(adminApp);
+  const ref = db.collection('modules').doc(id);
+  await ref.update({ ...data, updatedAt: new Date().toISOString() });
 }
 
 export async function deleteModule(id: string) {
-  const ref = doc(db, 'modules', id);
-  await deleteDoc(ref);
+  const db = getFirestore(adminApp);
+  const ref = db.collection('modules').doc(id);
+  await ref.delete();
 }
