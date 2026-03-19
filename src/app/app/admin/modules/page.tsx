@@ -85,14 +85,34 @@ const AdminModulesPage: React.FC = () => {
 
   const handleAddModule = async () => {
     setLoading(true);
-    setModules([...modules, { ...newModule, id: Date.now().toString() }]);
-    setNewModule({
-      id: "",
-      name: "",
-      description: "",
-      estimatedDuration: 0,
-      exercises: [],
-    });
+    try {
+      const token = localStorage.getItem('authToken');
+      const res = await fetch('/api/admin/modules', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: newModule.name,
+          description: newModule.description,
+          estimatedDuration: newModule.estimatedDuration,
+          exercises: newModule.exercises,
+        }),
+      });
+      if (!res.ok) throw new Error('Error al guardar el módulo');
+      const savedModule = await res.json();
+      setModules([...modules, savedModule]);
+      setNewModule({
+        id: "",
+        name: "",
+        description: "",
+        estimatedDuration: 0,
+        exercises: [],
+      });
+    } catch (err) {
+      alert((err as Error).message);
+    }
     setLoading(false);
   };
 
