@@ -49,9 +49,9 @@ export async function POST(req: NextRequest) {
     if (!user || (user.role !== 'owner' && user.role !== 'coach')) {
       return NextResponse.json({ success: false, error: 'Permisos insuficientes.' }, { status: 403 });
     }
-    const { name, description } = await req.json();
+    const { name, description, estimatedDuration, exercises } = await req.json();
     if (!name) return NextResponse.json({ success: false, error: 'Missing name' }, { status: 400 });
-    const module = await createModule({ name, description });
+    const module = await createModule({ name, description, estimatedDuration, exercises });
     return NextResponse.json({ success: true, module });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message || 'Error creating module' }, { status: 500 });

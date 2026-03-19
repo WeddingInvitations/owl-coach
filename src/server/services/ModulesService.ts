@@ -1,10 +1,18 @@
 import { getFirestore } from 'firebase-admin/firestore';
 import adminApp from '@/lib/firebase-admin';
-export async function createModule(module: { name: string; description: string }) {
+export async function createModule(module: { name: string; description: string; estimatedDuration?: number; exercises?: any[] }) {
   const db = getFirestore(adminApp);
   const now = new Date().toISOString();
-  const ref = await db.collection('modules').add({ ...module, createdAt: now, updatedAt: now });
-  return { id: ref.id, ...module };
+  const data = {
+    name: module.name,
+    description: module.description,
+    estimatedDuration: module.estimatedDuration || 0,
+    exercises: module.exercises || [],
+    createdAt: now,
+    updatedAt: now,
+  };
+  const ref = await db.collection('modules').add(data);
+  return { id: ref.id, ...data };
 }
 
 export async function listModules() {
