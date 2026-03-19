@@ -1,4 +1,4 @@
-import admin from '@/lib/firebase-admin';
+import { admin } from '@/lib/firebase-admin';
 
 /**
  * Delete a user from Firebase Auth and Firestore
@@ -10,7 +10,8 @@ export async function deleteUserCompletely(uid: string): Promise<void> {
     await admin.auth().deleteUser(uid);
   } catch (err) {
     // If user doesn't exist in Auth, ignore
-    if (err.code !== 'auth/user-not-found') throw err;
+    const error: any = err;
+    if (error.code !== 'auth/user-not-found') throw error;
   }
   // Delete from Firestore
   await admin.firestore().collection('users').doc(uid).delete();
