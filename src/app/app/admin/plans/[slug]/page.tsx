@@ -45,7 +45,7 @@ const PlanEditPage = ({ params }: { params: { slug: string } }) => {
         });
         if (!res.ok) throw new Error("No se pudo cargar el plan");
         const data = await res.json();
-        setPlan(data.plan);
+        setPlan(data.data);
       } catch (err: any) {
         setError(err.message);
       }
@@ -57,6 +57,19 @@ const PlanEditPage = ({ params }: { params: { slug: string } }) => {
   if (loading) return <div>Cargando...</div>;
   if (error) return <div>Error: {error}</div>;
   if (!plan) return <div>No se encontró el plan.</div>;
+
+  if (plan.isPublished) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Plan publicado</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4">Este plan ya está publicado y no puede ser editado.</div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
