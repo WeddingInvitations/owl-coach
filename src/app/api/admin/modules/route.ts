@@ -107,8 +107,12 @@ export async function DELETE(req: NextRequest) {
     }
     const { id } = await req.json();
     if (!id) return NextResponse.json({ success: false, error: 'Missing id' }, { status: 400 });
-    await deleteModule(id);
-    return NextResponse.json({ success: true });
+    try {
+      await deleteModule(id);
+      return NextResponse.json({ success: true });
+    } catch (error: any) {
+      return NextResponse.json({ success: false, error: error.message || 'Error deleting module' }, { status: 400 });
+    }
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message || 'Error deleting module' }, { status: 500 });
   }

@@ -33,6 +33,22 @@ function AdminExercisesPage() {
   const [loading, setLoading] = useState(false);
   const [showExerciseForm, setShowExerciseForm] = useState(false);
 
+  React.useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    fetch('/api/admin/exercises', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && Array.isArray(data.exercises)) {
+          setExercises(data.exercises);
+        }
+      });
+  }, []);
+
   const handleAddInstruction = () => {
     if (instructionInput.trim()) {
       setNewExercise({ ...newExercise, instructions: [...newExercise.instructions, instructionInput.trim()] });
@@ -46,19 +62,36 @@ function AdminExercisesPage() {
 
   const handleAddExercise = async () => {
     setLoading(true);
-    setExercises(prev => [...prev, { ...newExercise, id: Date.now().toString() }]);
-    setNewExercise({
-      id: '',
-      name: '',
-      description: '',
-      sets: 3,
-      reps: '',
-      restTime: 60,
-      videoUrl: '',
-      imageUrl: '',
-      instructions: [],
-    });
-    setLoading(false);
+    try {
+      const token = localStorage.getItem('authToken');
+      const res = await fetch('/api/admin/exercises', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newExercise),
+      });
+      const data = await res.json();
+      if (data.success && data.exercise) {
+        setExercises(prev => [...prev, data.exercise]);
+        setNewExercise({
+          id: '',
+          name: '',
+          description: '',
+          sets: 3,
+          reps: '',
+          restTime: 60,
+          videoUrl: '',
+          imageUrl: '',
+          instructions: [],
+        });
+      }
+    } catch (error) {
+      // handle error
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

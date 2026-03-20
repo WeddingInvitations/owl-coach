@@ -1,24 +1,37 @@
-import { collection, doc, setDoc, getDocs, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { getFirestore } from 'firebase-admin/firestore';
+import { admin } from '@/lib/firebase-admin';
 
-export async function createExercise(exercise: { name: string; description: string }) {
+const db = admin.firestore();
+
+export async function createExercise(exercise: any) {
   const now = new Date().toISOString();
-  const ref = doc(collection(db, 'exercises'));
-  await setDoc(ref, { ...exercise, createdAt: now, updatedAt: now });
+  const ref = db.collection('exercises').doc();
+  await ref.set({
+    name: exercise.name || '',
+    description: exercise.description || '',
+    sets: typeof exercise.sets === 'number' ? exercise.sets : 3,
+    reps: typeof exercise.reps === 'string' ? exercise.reps : '',
+    restTime: typeof exercise.restTime === 'number' ? exercise.restTime : 60,
+    videoUrl: exercise.videoUrl || '',
+    imageUrl: exercise.imageUrl || '',
+    instructions: Array.isArray(exercise.instructions) ? exercise.instructions : [],
+    createdAt: now,
+    updatedAt: now,
+  });
   return { id: ref.id, ...exercise };
 }
 
 export async function listExercises() {
-  const snap = await getDocs(collection(db, 'exercises'));
+  const snap = await db.collection('exercises').get();
   return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
 export async function updateExercise(id: string, data: Partial<{ name: string; description: string }>) {
-  const ref = doc(db, 'exercises', id);
-  await updateDoc(ref, { ...data, updatedAt: new Date().toISOString() });
+  const ref = db.collection('exercises').doc(id);
+  await ref.update({ ...data, updatedAt: new Date().toISOString() });
 }
 
 export async function deleteExercise(id: string) {
-  const ref = doc(db, 'exercises', id);
-  await deleteDoc(ref);
+  const ref = db.collection('exercises').doc(id);
+  await ref.delete();
 }

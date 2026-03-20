@@ -12,9 +12,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, description } = await req.json();
-    if (!name) return NextResponse.json({ success: false, error: 'Missing name' }, { status: 400 });
-    const exercise = await createExercise({ name, description });
+    const exerciseData = await req.json();
+    if (!exerciseData.name) return NextResponse.json({ success: false, error: 'Missing name' }, { status: 400 });
+    const exercise = await createExercise(exerciseData);
     return NextResponse.json({ success: true, exercise });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message || 'Error creating exercise' }, { status: 500 });
