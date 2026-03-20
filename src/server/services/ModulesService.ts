@@ -33,7 +33,7 @@ export async function listModules() {
   return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
-export async function updateModule(id: string, data: Partial<{ name: string; description: string }>) {
+export async function updateModule(id: string, data: Partial<{ name: string; description: string; estimatedDuration: number; exercises: any[] }>) {
   const db = getFirestore(adminApp);
   const ref = db.collection('modules').doc(id);
   await ref.update({ ...data, updatedAt: new Date().toISOString() });

@@ -77,9 +77,9 @@ export async function PUT(req: NextRequest) {
     if (!user || (user.role !== 'owner' && user.role !== 'coach')) {
       return NextResponse.json({ success: false, error: 'Permisos insuficientes.' }, { status: 403 });
     }
-    const { id, name, description } = await req.json();
+    const { id, name, description, estimatedDuration, exercises } = await req.json();
     if (!id) return NextResponse.json({ success: false, error: 'Missing id' }, { status: 400 });
-    await updateModule(id, { name, description });
+    await updateModule(id, { name, description, estimatedDuration, exercises });
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message || 'Error updating module' }, { status: 500 });

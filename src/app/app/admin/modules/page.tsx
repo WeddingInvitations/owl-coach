@@ -1,8 +1,10 @@
 "use client";
+import { Modal } from "@/components/ui/Modal";
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { useRouter } from "next/navigation";
 
 interface Exercise {
   id: string;
@@ -52,10 +54,29 @@ const AdminModulesPage: React.FC = () => {
   const [instructionInput, setInstructionInput] = React.useState("");
   const [editModule, setEditModule] = React.useState<Module | null>(null);
   const [deleteModuleId, setDeleteModuleId] = React.useState<string | null>(null);
+  const [showEditModal, setShowEditModal] = React.useState(false);
 
+    // Fetch exercises from backend
+    const fetchExercises = async () => {
+      const token = localStorage.getItem('authToken');
+      if (!token) return;
+      const res = await fetch('/api/admin/exercises', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (res.status === 401) return;
+      const data = await res.json();
+      if (data.success && Array.isArray(data.exercises)) {
+        setExistingExercises(data.exercises);
+      }
+    };
   // Handlers principales
-  const handleEditModule = (module: Module) => {
+  const handleEditModule = async (module: Module) => {
+    await fetchExercises();
     setEditModule(module);
+    setShowEditModal(true);
   };
 
   const handleDeleteModule = (id: string) => {
@@ -83,27 +104,46 @@ const AdminModulesPage: React.FC = () => {
   const handleSaveEditModule = async () => {
     if (!editModule) return;
     setLoading(true);
-    const token = localStorage.getItem('authToken');
-    const res = await fetch('/api/admin/modules', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        id: editModule.id,
-        name: editModule.name,
-        description: editModule.description,
-        estimatedDuration: editModule.estimatedDuration,
-        exercises: editModule.exercises,
-      }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      setModules((prev: Module[]) => prev.map((m: Module) => m.id === editModule.id ? { ...m, ...editModule } : m));
-      setEditModule(null);
+    try {
+      const token = localStorage.getItem('authToken');
+      const res = await fetch('/api/admin/modules', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          id: editModule.id,
+          name: editModule.name,
+          description: editModule.description,
+          estimatedDuration: Number(editModule.estimatedDuration),
+          exercises: editModule.exercises.map(ex => ({
+            ...ex,
+            id: ex.id || undefined,
+            name: ex.name,
+            description: ex.description,
+            sets: ex.sets,
+            reps: ex.reps,
+            restTime: ex.restTime,
+            videoUrl: ex.videoUrl,
+            imageUrl: ex.imageUrl,
+            instructions: ex.instructions,
+          })),
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setModules((prev: Module[]) => prev.map((m: Module) => m.id === editModule.id ? { ...m, ...editModule } : m));
+        setEditModule(null);
+        setShowEditModal(false);
+      } else {
+        alert(data.error || 'Error al guardar los cambios');
+      }
+    } catch (error) {
+      alert('Error al guardar los cambios');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleSaveNewExercise = async () => {
@@ -232,6 +272,7 @@ const AdminModulesPage: React.FC = () => {
 
   const [showModuleForm, setShowModuleForm] = useState(false);
   const [showExerciseForm, setShowExerciseForm] = useState(false);
+  const router = useRouter();
 
   React.useEffect(() => {
     const fetchModules = async () => {
@@ -256,10 +297,79 @@ const AdminModulesPage: React.FC = () => {
       }
     };
     fetchModules();
+    fetchExercises();
   }, []);
+
+  const closeEditModal = () => {
+    setEditModule(null);
+    setShowEditModal(false);
+  };
 
   return (
     <div className="space-y-6">
+      {/* Modal for editing module */}
+      {showEditModal && editModule && (
+        <Modal isOpen={showEditModal} onClose={closeEditModal} title="Editar módulo" size="lg">
+          <div className="space-y-6">
+            <Input label="Nombre del módulo" value={editModule.name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditModule({ ...editModule, name: e.target.value })} required />
+            <Input label="Descripción" value={editModule.description} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditModule({ ...editModule, description: e.target.value })} required />
+            <Input label="Duración estimada (minutos)" type="number" value={editModule.estimatedDuration} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditModule({ ...editModule, estimatedDuration: Number(e.target.value) })} required />
+            <h3 className="font-semibold mt-4 mb-2">Ejercicios del módulo</h3>
+            {editModule.exercises.length === 0 ? (
+              <div>No hay ejercicios en este módulo.</div>
+            ) : (
+              <ul>
+                {editModule.exercises.map((ex: Exercise, idx: number) => (
+                  <li key={ex.id || idx} className="mb-2 flex items-center gap-2">
+                    <span>{ex.name}</span>
+                    <Button type="button" variant="destructive" onClick={() => {
+                      setEditModule({
+                        ...editModule,
+                        exercises: editModule.exercises.filter((_, i) => i !== idx)
+                      });
+                    }}>Quitar</Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <h3 className="font-semibold mt-4 mb-2">Añadir ejercicios existentes</h3>
+            {existingExercises.length === 0 ? (
+              <div>No hay ejercicios disponibles.</div>
+            ) : (
+              <ul>
+                {existingExercises.map((ex: Exercise) => (
+                  <li key={ex.id} className="mb-2 flex items-center gap-2">
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={editModule.exercises.some(e => e.id === ex.id)}
+                        onChange={e => {
+                          if (e.target.checked) {
+                            setEditModule({
+                              ...editModule,
+                              exercises: [...editModule.exercises, ex]
+                            });
+                          } else {
+                            setEditModule({
+                              ...editModule,
+                              exercises: editModule.exercises.filter(e => e.id !== ex.id)
+                            });
+                          }
+                        }}
+                      />
+                      <span>{ex.name}</span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className="flex gap-2 mt-4">
+              <Button onClick={handleSaveEditModule} loading={loading}>Guardar cambios</Button>
+              <Button variant="outline" onClick={closeEditModal}>Cancelar</Button>
+            </div>
+          </div>
+        </Modal>
+      )}
       <Card>
         <CardHeader>
           <CardTitle>Módulos</CardTitle>
@@ -397,25 +507,7 @@ const AdminModulesPage: React.FC = () => {
             )}
           </div>
           {/* Renderizar formulario de edición si editModule está activo */}
-          {editModule && (
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Editar módulo</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Input label="Nombre del módulo" value={editModule.name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditModule({ ...editModule, name: e.target.value })} required />
-                  <Input label="Descripción" value={editModule.description} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditModule({ ...editModule, description: e.target.value })} required />
-                  <Input label="Duración estimada (minutos)" type="number" value={editModule.estimatedDuration} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditModule({ ...editModule, estimatedDuration: Number(e.target.value) })} required />
-                  {/* Aquí podrías añadir edición de ejercicios si lo necesitas */}
-                  <div className="flex gap-2 mt-4">
-                    <Button onClick={handleSaveEditModule} loading={loading}>Guardar cambios</Button>
-                    <Button variant="outline" onClick={() => setEditModule(null)}>Cancelar</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+          {/* Edit form is now rendered in Modal above */}
         </CardContent>
       </Card>
     </div>
