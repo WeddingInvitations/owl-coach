@@ -15,8 +15,8 @@ interface Exercise {
   imageUrl?: string;
   instructions: string[];
 }
-
-export default function AdminExercisesPage() {
+// ...existing code...
+function AdminExercisesPage() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [newExercise, setNewExercise] = useState<Exercise>({
     id: '',
@@ -31,6 +31,7 @@ export default function AdminExercisesPage() {
   });
   const [instructionInput, setInstructionInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showExerciseForm, setShowExerciseForm] = useState(false);
 
   const handleAddInstruction = () => {
     if (instructionInput.trim()) {
@@ -45,8 +46,7 @@ export default function AdminExercisesPage() {
 
   const handleAddExercise = async () => {
     setLoading(true);
-    // TODO: Call service to create exercise
-    setExercises([...exercises, { ...newExercise, id: Date.now().toString() }]);
+    setExercises(prev => [...prev, { ...newExercise, id: Date.now().toString() }]);
     setNewExercise({
       id: '',
       name: '',
@@ -68,31 +68,34 @@ export default function AdminExercisesPage() {
           <CardTitle>Gestión de Ejercicios</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="mb-4 grid gap-2">
-            <Input label="Nombre del ejercicio" value={newExercise.name} onChange={e => setNewExercise({ ...newExercise, name: e.target.value })} required />
-            <Input label="Descripción" value={newExercise.description} onChange={e => setNewExercise({ ...newExercise, description: e.target.value })} required />
-            <Input label="Series" type="number" value={newExercise.sets} onChange={e => setNewExercise({ ...newExercise, sets: Number(e.target.value) })} required />
-            <Input label="Repeticiones" value={newExercise.reps} onChange={e => setNewExercise({ ...newExercise, reps: e.target.value })} required />
-            <Input label="Descanso (segundos)" type="number" value={newExercise.restTime} onChange={e => setNewExercise({ ...newExercise, restTime: Number(e.target.value) })} required />
-            <Input label="URL de video" value={newExercise.videoUrl || ''} onChange={e => setNewExercise({ ...newExercise, videoUrl: e.target.value })} />
-            <Input label="URL de imagen" value={newExercise.imageUrl || ''} onChange={e => setNewExercise({ ...newExercise, imageUrl: e.target.value })} />
-            <div>
-              <label className="block text-sm font-medium mb-1">Instrucciones</label>
-              <div className="flex gap-2 mb-2">
-                <Input value={instructionInput} onChange={e => setInstructionInput(e.target.value)} placeholder="Añadir instrucción" />
-                <Button type="button" onClick={handleAddInstruction}>Añadir</Button>
+          <Button onClick={() => setShowExerciseForm(!showExerciseForm)} className="mb-4">{showExerciseForm ? 'Cerrar formulario' : 'Crear ejercicio'}</Button>
+          {showExerciseForm && (
+            <div className="mb-4 grid gap-2">
+              <Input label="Nombre del ejercicio" value={newExercise.name} onChange={e => setNewExercise({ ...newExercise, name: e.target.value })} required />
+              <Input label="Descripción" value={newExercise.description} onChange={e => setNewExercise({ ...newExercise, description: e.target.value })} required />
+              <Input label="Series" type="number" value={newExercise.sets} onChange={e => setNewExercise({ ...newExercise, sets: Number(e.target.value) })} required />
+              <Input label="Repeticiones" value={newExercise.reps} onChange={e => setNewExercise({ ...newExercise, reps: e.target.value })} required />
+              <Input label="Descanso (segundos)" type="number" value={newExercise.restTime} onChange={e => setNewExercise({ ...newExercise, restTime: Number(e.target.value) })} required />
+              <Input label="URL de video" value={newExercise.videoUrl || ''} onChange={e => setNewExercise({ ...newExercise, videoUrl: e.target.value })} />
+              <Input label="URL de imagen" value={newExercise.imageUrl || ''} onChange={e => setNewExercise({ ...newExercise, imageUrl: e.target.value })} />
+              <div>
+                <label className="block text-sm font-medium mb-1">Instrucciones</label>
+                <div className="flex gap-2 mb-2">
+                  <Input value={instructionInput} onChange={e => setInstructionInput(e.target.value)} placeholder="Añadir instrucción" />
+                  <Button type="button" onClick={handleAddInstruction}>Añadir</Button>
+                </div>
+                <ul>
+                  {newExercise.instructions.map((inst, idx) => (
+                    <li key={idx} className="flex items-center gap-2 mb-1">
+                      <span>{inst}</span>
+                      <Button size="sm" variant="destructive" type="button" onClick={() => handleRemoveInstruction(idx)}>Eliminar</Button>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul>
-                {newExercise.instructions.map((inst, idx) => (
-                  <li key={idx} className="flex items-center gap-2 mb-1">
-                    <span>{inst}</span>
-                    <Button size="sm" variant="destructive" type="button" onClick={() => handleRemoveInstruction(idx)}>Eliminar</Button>
-                  </li>
-                ))}
-              </ul>
+              <Button onClick={handleAddExercise} loading={loading} className="mt-2">Guardar ejercicio</Button>
             </div>
-            <Button onClick={handleAddExercise} loading={loading} className="mt-2">Añadir ejercicio</Button>
-          </div>
+          )}
           <div>
             {exercises.length === 0 ? (
               <div>No hay ejercicios creados.</div>
@@ -116,3 +119,5 @@ export default function AdminExercisesPage() {
     </div>
   );
 }
+
+export default AdminExercisesPage;
