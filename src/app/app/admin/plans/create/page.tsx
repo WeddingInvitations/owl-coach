@@ -104,6 +104,7 @@ function CreatePlanPage() {
     id: '',
     name: '',
     description: '',
+    tipo: '',
     sets: 0,
     reps: '',
     restTime: 0,
@@ -160,6 +161,7 @@ function CreatePlanPage() {
       id: '',
       name: '',
       description: '',
+      tipo: '',
       sets: 0,
       reps: '',
       restTime: 0,
@@ -512,6 +514,12 @@ function CreatePlanPage() {
                           value={currentExercise.name}
                           onChange={(e) => setCurrentExercise((prev: Exercise) => ({ ...prev, name: e.target.value }))}
                           placeholder="Nombre del ejercicio"
+                        />
+                        <label className="block text-sm font-medium mb-1 mt-2">Tipo de ejercicio (EMOM, EMOM 2', etc.)</label>
+                        <Input
+                          value={currentExercise.tipo || ''}
+                          onChange={(e) => setCurrentExercise((prev: Exercise) => ({ ...prev, tipo: e.target.value }))}
+                          placeholder="Tipo de ejercicio"
                         />
                         {fieldErrors.exerciseName && (
                           <p className="text-sm text-destructive mt-1">{fieldErrors.exerciseName}</p>

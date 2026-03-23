@@ -138,15 +138,15 @@ export default function AdminPlansPage() {
                 onChange={(e) => setSelectedLevel(e.target.value)}
                 className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               >
-                <option value="all">All Levels</option>
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
+                <option value="all">Todos los niveles</option>
+                <option value="beginner">Principiante</option>
+                <option value="intermediate">Intermedio</option>
+                <option value="advanced">Avanzado</option>
               </select>
             </div>
             <Button asChild>
               <Link href="/app/admin/plans/create">
-                Create Plan
+                Crear Plan
               </Link>
             </Button>
           </div>

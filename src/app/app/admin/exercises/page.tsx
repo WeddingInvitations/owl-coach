@@ -8,6 +8,7 @@ interface Exercise {
   id: string;
   name: string;
   description: string;
+  tipo?: string;
   sets: number;
   reps: string;
   restTime: number;
@@ -22,6 +23,7 @@ function AdminExercisesPage() {
     id: '',
     name: '',
     description: '',
+    tipo: '',
     sets: 3,
     reps: '',
     restTime: 60,
@@ -79,6 +81,7 @@ function AdminExercisesPage() {
           id: '',
           name: '',
           description: '',
+          tipo: '',
           sets: 3,
           reps: '',
           restTime: 60,
@@ -106,6 +109,7 @@ function AdminExercisesPage() {
             <div className="mb-4 grid gap-2">
               <Input label="Nombre del ejercicio" value={newExercise.name} onChange={e => setNewExercise({ ...newExercise, name: e.target.value })} required />
               <Input label="Descripción" value={newExercise.description} onChange={e => setNewExercise({ ...newExercise, description: e.target.value })} required />
+              <Input label="Tipo de ejercicio (EMOM, EMOM 2', etc.)" value={newExercise.tipo || ''} onChange={e => setNewExercise({ ...newExercise, tipo: e.target.value })} />
               <Input label="Series" type="number" value={newExercise.sets} onChange={e => setNewExercise({ ...newExercise, sets: Number(e.target.value) })} required />
               <Input label="Repeticiones" value={newExercise.reps} onChange={e => setNewExercise({ ...newExercise, reps: e.target.value })} required />
               <Input label="Descanso (segundos)" type="number" value={newExercise.restTime} onChange={e => setNewExercise({ ...newExercise, restTime: Number(e.target.value) })} required />

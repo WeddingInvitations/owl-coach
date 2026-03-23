@@ -13,6 +13,7 @@ export interface Exercise {
   id: string;
   name: string;
   description: string;
+  tipo?: string; // EMOM, EMOM 2', etc.
   sets: number;
   reps: string; // puede ser "10-12" o "30 seconds"
   restTime: number; // en segundos

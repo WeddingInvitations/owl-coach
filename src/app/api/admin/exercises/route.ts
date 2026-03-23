@@ -14,7 +14,8 @@ export async function POST(req: NextRequest) {
   try {
     const exerciseData = await req.json();
     if (!exerciseData.name) return NextResponse.json({ success: false, error: 'Missing name' }, { status: 400 });
-    const exercise = await createExercise(exerciseData);
+    // tipo is optional, but always pass it
+    const exercise = await createExercise({ ...exerciseData, tipo: exerciseData.tipo || '' });
     return NextResponse.json({ success: true, exercise });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message || 'Error creating exercise' }, { status: 500 });

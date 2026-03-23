@@ -10,6 +10,7 @@ interface Exercise {
   id: string;
   name: string;
   description: string;
+  tipo?: string;
   sets: number;
   reps: string;
   restTime: number;
@@ -415,6 +416,7 @@ const AdminModulesPage: React.FC = () => {
                   <h4 className="font-semibold mb-2">Crear nuevo ejercicio</h4>
                   <Input label="Nombre" value={currentExercise.name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCurrentExercise({ ...currentExercise, name: e.target.value })} required />
                   <Input label="Descripción" value={currentExercise.description} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCurrentExercise({ ...currentExercise, description: e.target.value })} required />
+                  <Input label="Tipo de ejercicio (EMOM, EMOM 2', etc.)" value={currentExercise.tipo || ''} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCurrentExercise({ ...currentExercise, tipo: e.target.value })} />
                   <Input label="Series" type="number" value={currentExercise.sets} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCurrentExercise({ ...currentExercise, sets: Number(e.target.value) })} required />
                   <Input label="Repeticiones" value={currentExercise.reps} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCurrentExercise({ ...currentExercise, reps: e.target.value })} required />
                   <Input label="Descanso (segundos)" type="number" value={currentExercise.restTime} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCurrentExercise({ ...currentExercise, restTime: Number(e.target.value) })} required />

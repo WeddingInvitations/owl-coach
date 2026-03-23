@@ -9,6 +9,7 @@ export async function createExercise(exercise: any) {
   await ref.set({
     name: exercise.name || '',
     description: exercise.description || '',
+    tipo: exercise.tipo || '',
     sets: typeof exercise.sets === 'number' ? exercise.sets : 3,
     reps: typeof exercise.reps === 'string' ? exercise.reps : '',
     restTime: typeof exercise.restTime === 'number' ? exercise.restTime : 60,
