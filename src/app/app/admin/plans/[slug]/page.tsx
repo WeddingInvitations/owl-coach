@@ -28,10 +28,13 @@ interface TrainingPlan {
 }
 
 const PlanEditPage = ({ params }: { params: { slug: string } }) => {
+
   const router = useRouter();
   const [plan, setPlan] = useState<TrainingPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [editPlan, setEditPlan] = useState<TrainingPlan | null>(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const fetchPlan = async () => {
@@ -55,12 +58,20 @@ const PlanEditPage = ({ params }: { params: { slug: string } }) => {
     fetchPlan();
   }, [params.slug]);
 
-  if (loading) return <div>Cargando...</div>;
-  if (error) return <div>Error: {error}</div>;
-  if (!plan) return <div>No se encontró el plan.</div>;
+  useEffect(() => {
+    if (plan) setEditPlan(plan);
+  }, [plan]);
 
-  if (plan.isPublished) {
-    return (
+  // Variables para los returns condicionales
+  let content: React.ReactNode = null;
+  if (loading) {
+    content = <div>Cargando...</div>;
+  } else if (error) {
+    content = <div>Error: {error}</div>;
+  } else if (!plan) {
+    content = <div>No se encontró el plan.</div>;
+  } else if (plan.isPublished) {
+    content = (
       <Card>
         <CardHeader>
           <CardTitle>Plan publicado</CardTitle>
@@ -70,16 +81,19 @@ const PlanEditPage = ({ params }: { params: { slug: string } }) => {
         </CardContent>
       </Card>
     );
+  } else if (!editPlan) {
+    content = null;
   }
 
-  // Estado editable
-  const [editPlan, setEditPlan] = useState<TrainingPlan | null>(null);
-  const [saving, setSaving] = useState(false);
-  useEffect(() => {
-    if (plan) setEditPlan(plan);
-  }, [plan]);
 
-  if (!editPlan) return null;
+  if (content !== null) {
+    return content;
+  }
+
+  // Si editPlan es null, no renderizar el formulario
+  if (!editPlan) {
+    return null;
+  }
 
   const handleChange = (field: keyof TrainingPlan, value: any) => {
     setEditPlan(prev => prev ? { ...prev, [field]: value } : prev);
