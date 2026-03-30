@@ -114,10 +114,10 @@ export function PlansList({
             onChange={(e) => setSelectedDifficulty(e.target.value)}
             className="px-3 py-2 border rounded-md text-sm"
           >
-            <option value="">All Difficulties</option>
-            <option value="beginner">Beginner</option>
-            <option value="intermediate">Intermediate</option>
-            <option value="advanced">Advanced</option>
+            <option value="">Todas las dificultades</option>
+            <option value="principiante">Principiante</option>
+            <option value="intermedio">Intermedio</option>
+            <option value="avanzado">Avanzado</option>
           </select>
 
           <select
@@ -125,11 +125,11 @@ export function PlansList({
             onChange={(e) => setSortBy(e.target.value)}
             className="px-3 py-2 border rounded-md text-sm"
           >
-            <option value="recent">Most Recent</option>
-            <option value="name">Name A-Z</option>
-            <option value="price-low">Price: Low to High</option>
-            <option value="price-high">Price: High to Low</option>
-            <option value="duration">Duration</option>
+            <option value="recent">Más recientes</option>
+            <option value="name">Nombre A-Z</option>
+            <option value="price-low">Precio: de menor a mayor</option>
+            <option value="price-high">Precio: de mayor a menor</option>
+            <option value="duration">Duración</option>
           </select>
         </div>
       </div>
@@ -138,11 +138,11 @@ export function PlansList({
       {(searchTerm || selectedDifficulty) && (
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">
-            Showing {filteredPlans.length} of {plans.length} plans
+            Mostrando {filteredPlans.length} de {plans.length} planes
           </span>
           {searchTerm && (
             <Badge variant="outline">
-              Search: "{searchTerm}"
+              Búsqueda: "{searchTerm}"
               <button
                 onClick={() => setSearchTerm('')}
                 className="ml-1 hover:text-destructive"
@@ -153,7 +153,7 @@ export function PlansList({
           )}
           {selectedDifficulty && (
             <Badge variant="outline">
-              {selectedDifficulty}
+              Dificultad: {selectedDifficulty}
               <button
                 onClick={() => setSelectedDifficulty('')}
                 className="ml-1 hover:text-destructive"
@@ -168,11 +168,11 @@ export function PlansList({
       {/* Plans Grid */}
       {filteredPlans.length === 0 ? (
         <EmptyState
-          title="No Plans Found"
+          title="No se encontraron planes"
           description={
             searchTerm || selectedDifficulty
-              ? "No plans match your current filters. Try adjusting your search criteria."
-              : "There are no training plans available at the moment."
+              ? "No hay planes que coincidan con tus filtros actuales. Intenta ajustar tus criterios de búsqueda."
+              : "No hay planes de entrenamiento disponibles en este momento."
           }
           icon={<span className="text-4xl">📚</span>}
         />

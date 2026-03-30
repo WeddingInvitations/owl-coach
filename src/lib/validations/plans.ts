@@ -25,7 +25,7 @@ export const createTrainingPlanSchema = z.object({
   shortDescription: z.string().min(1, 'La descripción corta es requerida'),
   fullDescription: z.string().min(1, 'La descripción completa es requerida'),
   coverImage: z.string().url('La imagen de portada debe ser una URL válida').optional().or(z.literal('')),
-  difficulty: z.enum(['beginner', 'intermediate', 'advanced']),
+  difficulty: z.enum(['principiante', 'intermedio', 'avanzado']),
   duration: z.number().min(1, 'La duración debe ser al menos 1 semana'),
   price: z.number().min(0, 'El precio debe ser 0 o más'),
   currency: z.enum(['USD', 'EUR']),

@@ -118,9 +118,9 @@ export default function AdminPlansPage() {
       {/* Header Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Training Plans Management</CardTitle>
+          <CardTitle>Gestión de planes de entrenamiento</CardTitle>
           <CardDescription>
-            Manage all training plans on the platform
+            Gestiona todos los planes de entrenamiento en la plataforma
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -128,7 +128,7 @@ export default function AdminPlansPage() {
           <div className="flex justify-between items-center mb-6">
             <div className="flex gap-4 flex-1">
               <Input
-                placeholder="Search plans by title, description, or tags..."
+                placeholder="Buscar planes por título, descripción o etiquetas..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="max-w-md"
@@ -156,31 +156,31 @@ export default function AdminPlansPage() {
             <Card>
               <CardContent className="p-4">
                 <div className="text-2xl font-bold">{plans.length}</div>
-                <div className="text-sm text-muted-foreground">Total Plans</div>
+                <div className="text-sm text-muted-foreground">Total de Planes</div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
                 <div className="text-2xl font-bold">
-                  {plans.filter(p => p.difficulty === 'beginner').length}
+                  {plans.filter(p => p.difficulty === 'principiante').length}
                 </div>
-                <div className="text-sm text-muted-foreground">Beginner</div>
+                <div className="text-sm text-muted-foreground">Principiante</div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
                 <div className="text-2xl font-bold">
-                  {plans.filter(p => p.difficulty === 'intermediate').length}
+                  {plans.filter(p => p.difficulty === 'intermedio').length}
                 </div>
-                <div className="text-sm text-muted-foreground">Intermediate</div>
+                <div className="text-sm text-muted-foreground">Intermedio</div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
                 <div className="text-2xl font-bold">
-                  {plans.filter(p => p.difficulty === 'advanced').length}
+                  {plans.filter(p => p.difficulty === 'avanzado').length}
                 </div>
-                <div className="text-sm text-muted-foreground">Advanced</div>
+                <div className="text-sm text-muted-foreground">Avanzado</div>
               </CardContent>
             </Card>
           </div>
@@ -190,12 +190,12 @@ export default function AdminPlansPage() {
       {/* Plans List */}
       <Card>
         <CardHeader>
-          <CardTitle>Plans ({filteredPlans.length})</CardTitle>
+          <CardTitle>Planes ({filteredPlans.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {filteredPlans.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              {plans.length === 0 ? 'No plans found' : 'No plans match the current filter'}
+              {plans.length === 0 ? 'No se han encontrado planes' : 'No hay planes que coincidan con el filtro actual'}
             </div>
           ) : (
             <div className="grid gap-4">

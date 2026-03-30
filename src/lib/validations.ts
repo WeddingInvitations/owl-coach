@@ -32,7 +32,7 @@ export const moduleSchema = z.object({
 export const createTrainingPlanSchema = z.object({
   title: z.string().min(1, 'Plan title is required'),
   description: z.string().min(1, 'Plan description is required'),
-  level: z.enum(['beginner', 'intermediate', 'advanced']),
+  level: z.enum(['principiante', 'intermedio', 'avanzado']),
   price: z.number().min(0, 'Price must be positive'),
   imageUrl: z.string().url().optional().or(z.literal('')),
   tags: z.array(z.string()),

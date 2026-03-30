@@ -1,5 +1,5 @@
-export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced';
-export type Currency = 'USD' | 'EUR';
+export type DifficultyLevel = 'principiante' | 'intermedio' | 'avanzado';
+export type Currency = 'EUR' | 'USD';
 
 export interface TrainingModule {
   id: string;

@@ -20,12 +20,12 @@ export function formatDuration(weeks: number): string {
 
 export function formatDifficulty(difficulty: DifficultyLevel): string {
   switch (difficulty) {
-    case 'beginner':
-      return 'Beginner';
-    case 'intermediate':
-      return 'Intermediate';
-    case 'advanced':
-      return 'Advanced';
+    case 'principiante':
+      return 'principiante';
+    case 'intermedio':
+      return 'intermedio';
+    case 'avanzado':
+      return 'avanzado';
     default:
       return difficulty;
   }

@@ -1,7 +1,7 @@
 export const DIFFICULTIES = {
-  BEGINNER: 'beginner',
-  INTERMEDIATE: 'intermediate',  
-  ADVANCED: 'advanced',
+  BEGINNER: 'principiante',
+  INTERMEDIATE: 'intermedio',  
+  ADVANCED: 'avanzado',
 } as const;
 
 export const CURRENCIES = {

@@ -50,7 +50,7 @@ function CreatePlanPage() {
     title: '',
     shortDescription: '',
     fullDescription: '',
-    difficulty: 'beginner',
+    difficulty: 'principiante',
     duration: 1,
     price: 0,
     currency: 'USD',
@@ -361,12 +361,12 @@ function CreatePlanPage() {
                   value={form.difficulty}
                   onChange={(e) => setForm((prev: CreatePlanForm) => ({ 
                     ...prev, 
-                    difficulty: e.target.value as 'beginner' | 'intermediate' | 'advanced' 
+                    difficulty: e.target.value as 'principiante' | 'intermedio' | 'avanzado' 
                   }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
-                  <option value="beginner">Principiante</option>
-                  <option value="intermediate">Intermedio</option>
+                  <option value="principiante">Principiante</option>
+                  <option value="intermedio">Intermedio</option>
                   <option value="advanced">Avanzado</option>
                 </select>
               </div>
