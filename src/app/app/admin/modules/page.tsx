@@ -56,6 +56,8 @@ const AdminModulesPage: React.FC = () => {
   const [editModule, setEditModule] = React.useState<Module | null>(null);
   const [deleteModuleId, setDeleteModuleId] = React.useState<string | null>(null);
   const [showEditModal, setShowEditModal] = React.useState(false);
+  const [previewExercise, setPreviewExercise] = React.useState<Exercise | null>(null);
+  const [showPreviewModal, setShowPreviewModal] = React.useState(false);
 
     // Fetch exercises from backend
     const fetchExercises = async () => {
@@ -301,6 +303,16 @@ const AdminModulesPage: React.FC = () => {
     fetchExercises();
   }, []);
 
+  const handlePreviewExercise = (exercise: Exercise) => {
+    setPreviewExercise(exercise);
+    setShowPreviewModal(true);
+  };
+
+  const closePreviewModal = () => {
+    setPreviewExercise(null);
+    setShowPreviewModal(false);
+  };
+
   const closeEditModal = () => {
     setEditModule(null);
     setShowEditModal(false);
@@ -339,8 +351,8 @@ const AdminModulesPage: React.FC = () => {
             ) : (
               <ul>
                 {existingExercises.map((ex: Exercise) => (
-                  <li key={ex.id} className="mb-2 flex items-center gap-2">
-                    <label>
+                  <li key={ex.id} className="mb-2 flex items-center justify-between">
+                    <label className="flex items-center gap-2">
                       <input
                         type="checkbox"
                         checked={editModule.exercises.some(e => e.id === ex.id)}
@@ -360,6 +372,14 @@ const AdminModulesPage: React.FC = () => {
                       />
                       <span>{ex.name}</span>
                     </label>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => handlePreviewExercise(ex)}
+                      className="ml-2"
+                    >
+                      👁️
+                    </Button>
                   </li>
                 ))}
               </ul>
@@ -386,8 +406,8 @@ const AdminModulesPage: React.FC = () => {
                 ) : (
                   <ul>
                     {existingExercises.map((ex: Exercise) => (
-                      <li key={ex.id} className="mb-2">
-                        <label>
+                      <li key={ex.id} className="mb-2 flex items-center justify-between">
+                        <label className="flex items-center gap-2">
                           <input
                             type="checkbox"
                             checked={selectedExistingExercises.includes(ex.id)}
@@ -399,8 +419,16 @@ const AdminModulesPage: React.FC = () => {
                               }
                             }}
                           />
-                          <strong>{ex.name}</strong>: {ex.description} | Series: {ex.sets} | Reps: {ex.reps} | Descanso: {ex.restTime}s
+                          <span><strong>{ex.name}</strong>: {ex.description} | Series: {ex.sets} | Reps: {ex.reps} | Descanso: {ex.restTime}s</span>
                         </label>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={() => handlePreviewExercise(ex)}
+                          className="ml-2"
+                        >
+                          👁️
+                        </Button>
                       </li>
                     ))}
                   </ul>
@@ -512,6 +540,95 @@ const AdminModulesPage: React.FC = () => {
           {/* Edit form is now rendered in Modal above */}
         </CardContent>
       </Card>
+
+      {/* Modal de Vista Previa de Ejercicio */}
+      {showPreviewModal && previewExercise && (
+        <Modal 
+          isOpen={showPreviewModal} 
+          onClose={closePreviewModal}
+        >
+          <div className="max-w-lg max-h-[80vh] overflow-y-auto">
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold mb-4">Vista Previa del Ejercicio</h2>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Nombre</label>
+                  <p className="mt-1 text-sm text-gray-900 bg-gray-50 p-2 rounded">{previewExercise.name}</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Descripción</label>
+                  <p className="mt-1 text-sm text-gray-900 bg-gray-50 p-2 rounded">{previewExercise.description}</p>
+                </div>
+
+                {previewExercise.tipo && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Tipo</label>
+                    <p className="mt-1 text-sm text-gray-900 bg-gray-50 p-2 rounded">{previewExercise.tipo}</p>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Series</label>
+                    <p className="mt-1 text-sm text-gray-900 bg-gray-50 p-2 rounded text-center">{previewExercise.sets}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Repeticiones</label>
+                    <p className="mt-1 text-sm text-gray-900 bg-gray-50 p-2 rounded text-center">{previewExercise.reps}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Descanso (s)</label>
+                    <p className="mt-1 text-sm text-gray-900 bg-gray-50 p-2 rounded text-center">{previewExercise.restTime}</p>
+                  </div>
+                </div>
+
+                {previewExercise.videoUrl && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">URL de Video</label>
+                    <p className="mt-1 text-sm text-blue-600 bg-gray-50 p-2 rounded break-all">
+                      <a href={previewExercise.videoUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                        {previewExercise.videoUrl}
+                      </a>
+                    </p>
+                  </div>
+                )}
+
+                {previewExercise.imageUrl && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">URL de Imagen</label>
+                    <p className="mt-1 text-sm text-blue-600 bg-gray-50 p-2 rounded break-all">
+                      <a href={previewExercise.imageUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                        {previewExercise.imageUrl}
+                      </a>
+                    </p>
+                  </div>
+                )}
+
+                {previewExercise.instructions.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Instrucciones</label>
+                    <div className="mt-1 bg-gray-50 p-2 rounded">
+                      <ol className="list-decimal list-inside space-y-1">
+                        {previewExercise.instructions.map((instruction, idx) => (
+                          <li key={idx} className="text-sm text-gray-900">{instruction}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end pt-4">
+                <Button variant="outline" onClick={closePreviewModal}>
+                  Cerrar
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

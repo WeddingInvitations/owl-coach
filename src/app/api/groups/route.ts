@@ -50,8 +50,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const userId = authHeader.replace('Bearer ', '');
-    const userProfile = await authService.getUserProfile(userId);
+    // Verifica el token de Firebase y extrae UID
+    const admin = (await import('firebase-admin')).default;
+    if (!admin.apps.length) {
+      admin.initializeApp();
+    }
+    let decoded;
+    try {
+      decoded = await admin.auth().verifyIdToken(authHeader.replace('Bearer ', ''));
+    } catch (err) {
+      return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
+    }
+    const { uid } = decoded;
+    
+    const userProfile = await authService.getUserProfile(uid);
     if (!userProfile) {
       return NextResponse.json(
         { success: false, error: 'User not found' },

@@ -217,11 +217,21 @@ function CreatePlanPage() {
     const modulesToAdd = existingModules.filter(m => selectedExistingModules.includes(m.id));
     setForm((prev: CreatePlanForm) => ({
       ...prev,
-      previewModules: [...prev.previewModules, ...modulesToAdd.map(m => ({
+      fullModules: [...(prev.fullModules || []), ...modulesToAdd.map(m => ({
         id: m.id,
-        title: m.name,
-        description: m.description,
-        exercises: m.exercises || [],
+        title: m.name || '',
+        description: m.description || '',
+        exercises: (m.exercises || []).map((ex: any) => ({
+          id: ex.id || '',
+          name: ex.name || '',
+          description: ex.description || '',
+          sets: ex.sets || 0,
+          reps: ex.reps || '',
+          restTime: ex.restTime || 0,
+          videoUrl: ex.videoUrl || '',
+          imageUrl: ex.imageUrl || '',
+          instructions: Array.isArray(ex.instructions) ? ex.instructions : [],
+        })),
         estimatedDuration: m.estimatedDuration || 0,
       }))]
     }));
@@ -232,6 +242,13 @@ function CreatePlanPage() {
     setForm((prev: CreatePlanForm) => ({
       ...prev,
       previewModules: prev.previewModules.filter((m: TrainingModule) => m.id !== moduleId)
+    }));
+  };
+
+  const removeFullModule = (moduleId: string) => {
+    setForm((prev: CreatePlanForm) => ({
+      ...prev,
+      fullModules: (prev.fullModules || []).filter((m: TrainingModule) => m.id !== moduleId)
     }));
   };
 
@@ -643,7 +660,7 @@ function CreatePlanPage() {
             {/* Existing Modules */}
             {form.previewModules.length > 0 && (
               <div>
-                <h4 className="font-medium mb-4">Módulos del Plan ({form.previewModules.length})</h4>
+                <h4 className="font-medium mb-4">Módulos de Vista Previa ({form.previewModules.length})</h4>
                 <div className="space-y-4">
                   {form.previewModules.map((module: TrainingModule) => (
                     <Card key={module.id}>
@@ -661,6 +678,38 @@ function CreatePlanPage() {
                             variant="outline" 
                             size="sm"
                             onClick={() => removeModule(module.id)}
+                          >
+                            Eliminar
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Full Modules (Existing Modules Added) */}
+            {(form.fullModules && form.fullModules.length > 0) && (
+              <div>
+                <h4 className="font-medium mb-4">Módulos Existentes Añadidos ({form.fullModules.length})</h4>
+                <div className="space-y-4">
+                  {form.fullModules.map((module: TrainingModule) => (
+                    <Card key={module.id}>
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h5 className="font-medium">{module.title}</h5>
+                            <p className="text-sm text-muted-foreground mb-2">{module.description}</p>
+                            <div className="text-sm text-muted-foreground">
+                              {module.exercises.length} ejercicios • Módulo existente
+                            </div>
+                          </div>
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => removeFullModule(module.id)}
                           >
                             Eliminar
                           </Button>

@@ -82,15 +82,31 @@ export default function AdminPlansPage() {
     if (!confirm('Are you sure you want to delete this plan?')) return;
 
     try {
+      const { getCurrentUser } = await import('@/lib/firebase/auth');
+      const user = getCurrentUser();
+      const token = user ? await user.getIdToken() : null;
+      if (!token) {
+        alert('No se pudo obtener el token de autenticación.');
+        return;
+      }
+
       const response = await fetch(`/api/plans/${planId}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
 
       if (response.ok) {
         setPlans(plans.filter(plan => plan.id !== planId));
+      } else {
+        const errorData = await response.json();
+        alert(`Error deleting plan: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error deleting plan:', error);
+      alert('Error deleting plan');
     }
   };
 

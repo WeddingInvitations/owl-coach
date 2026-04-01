@@ -7,6 +7,14 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { TrainingModule, Exercise } from '@/types/training-plan';
 
+interface ExistingModule {
+  id: string;
+  name: string;
+  description: string;
+  estimatedDuration?: number;
+  exercises?: Exercise[];
+}
+
 interface TrainingPlan {
   id: string;
   title: string;
@@ -35,6 +43,29 @@ const PlanEditPage = ({ params }: { params: { slug: string } }) => {
   const [error, setError] = useState("");
   const [editPlan, setEditPlan] = useState<TrainingPlan | null>(null);
   const [saving, setSaving] = useState(false);
+  
+  // Estado para módulos existentes
+  const [existingModules, setExistingModules] = useState<ExistingModule[]>([]);
+  const [selectedExistingModules, setSelectedExistingModules] = useState<string[]>([]);
+
+  // Cargar módulos existentes
+  useEffect(() => {
+    const fetchExistingModules = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        const res = await fetch("/api/admin/modules", {
+          headers: { "Authorization": `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setExistingModules(data.modules || []);
+        }
+      } catch (error) {
+        console.error("Error fetching existing modules:", error);
+      }
+    };
+    fetchExistingModules();
+  }, []);
 
   useEffect(() => {
     const fetchPlan = async () => {
@@ -99,6 +130,48 @@ const PlanEditPage = ({ params }: { params: { slug: string } }) => {
     setEditPlan(prev => prev ? { ...prev, [field]: value } : prev);
   };
 
+  // Añadir módulos existentes al plan
+  const addExistingModulesToPlan = () => {
+    const modulesToAdd = existingModules.filter(m => selectedExistingModules.includes(m.id));
+    setEditPlan((prev) => prev ? ({
+      ...prev,
+      fullModules: [...(prev.fullModules || []), ...modulesToAdd.map(m => ({
+        id: m.id,
+        title: m.name || '',
+        description: m.description || '',
+        exercises: (m.exercises || []).map((ex: any) => ({
+          id: ex.id || '',
+          name: ex.name || '',
+          description: ex.description || '',
+          sets: ex.sets || 0,
+          reps: ex.reps || '',
+          restTime: ex.restTime || 0,
+          videoUrl: ex.videoUrl || '',
+          imageUrl: ex.imageUrl || '',
+          instructions: Array.isArray(ex.instructions) ? ex.instructions : [],
+        })),
+        estimatedDuration: m.estimatedDuration || 0,
+      }))]
+    }) : prev);
+    setSelectedExistingModules([]);
+  };
+
+  // Eliminar módulo de previewModules
+  const removePreviewModule = (moduleId: string) => {
+    setEditPlan(prev => prev ? ({
+      ...prev,
+      previewModules: prev.previewModules.filter((m: TrainingModule) => m.id !== moduleId)
+    }) : prev);
+  };
+
+  // Eliminar módulo de fullModules
+  const removeFullModule = (moduleId: string) => {
+    setEditPlan(prev => prev ? ({
+      ...prev,
+      fullModules: (prev.fullModules || []).filter((m: TrainingModule) => m.id !== moduleId)
+    }) : prev);
+  };
+
   const handleModuleChange = (idx: number, module: Partial<TrainingModule>) => {
     setEditPlan(prev => prev ? {
       ...prev,
@@ -137,22 +210,79 @@ const PlanEditPage = ({ params }: { params: { slug: string } }) => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Editar Plan: {editPlan.title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="mb-4 grid gap-2">
-          <Input label="Título" value={editPlan.title} onChange={e => handleChange("title", e.target.value)} />
-          <Input label="Descripción corta" value={editPlan.shortDescription} onChange={e => handleChange("shortDescription", e.target.value)} />
-          <Input label="Descripción completa" value={editPlan.fullDescription} onChange={e => handleChange("fullDescription", e.target.value)} />
-          {/* Otros campos básicos... */}
-        </div>
-        <hr className="my-4" />
-        <div>
-          <h4 className="font-semibold mb-2">Módulos</h4>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Editar Plan: {editPlan.title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4 grid gap-2">
+            <Input label="Título" value={editPlan.title} onChange={e => handleChange("title", e.target.value)} />
+            <Input label="Descripción corta" value={editPlan.shortDescription} onChange={e => handleChange("shortDescription", e.target.value)} />
+            <Input label="Descripción completa" value={editPlan.fullDescription} onChange={e => handleChange("fullDescription", e.target.value)} />
+            {/* Otros campos básicos... */}
+          </div>
+          <Button onClick={handleSave} loading={saving} className="mt-4">Guardar cambios</Button>
+        </CardContent>
+      </Card>
+
+      {/* Gestión de módulos existentes */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Añadir Módulos Existentes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {existingModules.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground mb-2">Selecciona módulos existentes para añadir al plan:</p>
+              {existingModules.map(mod => (
+                <div key={mod.id} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id={mod.id}
+                    checked={selectedExistingModules.includes(mod.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedExistingModules(prev => [...prev, mod.id]);
+                      } else {
+                        setSelectedExistingModules(prev => prev.filter(id => id !== mod.id));
+                      }
+                    }}
+                  />
+                  <label htmlFor={mod.id} className="text-sm">{mod.name} - {mod.description}</label>
+                </div>
+              ))}
+              <Button 
+                type="button" 
+                onClick={addExistingModulesToPlan} 
+                disabled={selectedExistingModules.length === 0} 
+                className="mt-2"
+              >
+                Añadir Módulos Seleccionados
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Módulos de Vista Previa */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Módulos de Vista Previa ({editPlan.previewModules.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
           {editPlan.previewModules.map((mod, modIdx) => (
-            <div key={mod.id} className="mb-4 p-2 border rounded">
+            <div key={mod.id} className="mb-4 p-4 border rounded">
+              <div className="flex justify-between items-start mb-3">
+                <h4 className="font-semibold">{mod.title}</h4>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => removePreviewModule(mod.id)}
+                >
+                  Eliminar
+                </Button>
+              </div>
               <Input label="Título del módulo" value={mod.title} onChange={e => handleModuleChange(modIdx, { title: e.target.value })} />
               <Input label="Descripción" value={mod.description} onChange={e => handleModuleChange(modIdx, { description: e.target.value })} />
               <Input label="Duración estimada" type="number" value={mod.estimatedDuration} onChange={e => handleModuleChange(modIdx, { estimatedDuration: Number(e.target.value) })} />
@@ -167,16 +297,45 @@ const PlanEditPage = ({ params }: { params: { slug: string } }) => {
                     <Input label="Descanso (segundos)" type="number" value={ex.restTime} onChange={e => handleExerciseChange(modIdx, exIdx, { restTime: Number(e.target.value) })} />
                     <Input label="URL de video" value={ex.videoUrl || ""} onChange={e => handleExerciseChange(modIdx, exIdx, { videoUrl: e.target.value })} />
                     <Input label="URL de imagen" value={ex.imageUrl || ""} onChange={e => handleExerciseChange(modIdx, exIdx, { imageUrl: e.target.value })} />
-                    {/* Instrucciones: editable como lista, se puede mejorar con UI adicional */}
                   </div>
                 ))}
               </div>
             </div>
           ))}
-        </div>
-        <Button onClick={handleSave} loading={saving} className="mt-4">Guardar cambios</Button>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      {/* Módulos Existentes Añadidos */}
+      {editPlan.fullModules && editPlan.fullModules.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Módulos Existentes Añadidos ({editPlan.fullModules.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {editPlan.fullModules.map((module: TrainingModule) => (
+              <div key={module.id} className="mb-3 p-4 border rounded">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h5 className="font-medium">{module.title}</h5>
+                    <p className="text-sm text-muted-foreground mb-2">{module.description}</p>
+                    <div className="text-sm text-muted-foreground">
+                      {module.exercises.length} ejercicios • Módulo existente
+                    </div>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => removeFullModule(module.id)}
+                  >
+                    Eliminar
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };
 

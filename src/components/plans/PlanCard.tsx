@@ -33,8 +33,8 @@ export function PlanCard({
           className="w-full h-full object-cover"
         />
         <div className="absolute top-4 right-4">
-          <Badge variant={plan.difficulty === 'beginner' ? 'success' : 
-                        plan.difficulty === 'intermediate' ? 'warning' : 'destructive'}>
+          <Badge variant={plan.difficulty === 'principiante' ? 'success' : 
+                        plan.difficulty === 'intermedio' ? 'warning' : 'destructive'}>
             {formatDifficulty(plan.difficulty)}
           </Badge>
         </div>

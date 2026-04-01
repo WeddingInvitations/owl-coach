@@ -20,11 +20,21 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     // Check if user is authenticated (optional for public access)
     const authHeader = request.headers.get('authorization');
     if (authHeader) {
-      const token = authHeader.replace('Bearer ', '');
-      const userProfile = await authService.getUserProfile(token);
-      if (userProfile) {
-        userId = userProfile.id;
-        userRole = userProfile.role as any;
+      // Verifica el token de Firebase y extrae UID
+      const admin = (await import('firebase-admin')).default;
+      if (!admin.apps.length) {
+        admin.initializeApp();
+      }
+      try {
+        const decoded = await admin.auth().verifyIdToken(authHeader.replace('Bearer ', ''));
+        const { uid } = decoded;
+        const userProfile = await authService.getUserProfile(uid);
+        if (userProfile) {
+          userId = userProfile.id;
+          userRole = userProfile.role as any;
+        }
+      } catch (err) {
+        // Invalid token - continue as unauthenticated user
       }
     }
 
@@ -79,8 +89,20 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const userId = authHeader.replace('Bearer ', '');
-    const userProfile = await authService.getUserProfile(userId);
+    // Verifica el token de Firebase y extrae UID
+    const admin = (await import('firebase-admin')).default;
+    if (!admin.apps.length) {
+      admin.initializeApp();
+    }
+    let decoded;
+    try {
+      decoded = await admin.auth().verifyIdToken(authHeader.replace('Bearer ', ''));
+    } catch (err) {
+      return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
+    }
+    const { uid } = decoded;
+    
+    const userProfile = await authService.getUserProfile(uid);
     
     if (!userProfile) {
       return NextResponse.json(
@@ -131,8 +153,20 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const userId = authHeader.replace('Bearer ', '');
-    const userProfile = await authService.getUserProfile(userId);
+    // Verifica el token de Firebase y extrae UID
+    const admin = (await import('firebase-admin')).default;
+    if (!admin.apps.length) {
+      admin.initializeApp();
+    }
+    let decoded;
+    try {
+      decoded = await admin.auth().verifyIdToken(authHeader.replace('Bearer ', ''));
+    } catch (err) {
+      return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
+    }
+    const { uid } = decoded;
+    
+    const userProfile = await authService.getUserProfile(uid);
     
     if (!userProfile) {
       return NextResponse.json(

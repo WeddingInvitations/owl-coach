@@ -232,7 +232,7 @@ owl-coach/
   id: string;
   title: string;
   description: string;
-  level: 'beginner' | 'intermediate' | 'advanced';
+  level: 'principiante' | 'intermedio' | 'avanzado';
   price: number;
   imageUrl?: string;
   tags: string[];
