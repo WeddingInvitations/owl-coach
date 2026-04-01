@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     if (planId) {
       // Check specific plan access
       const hasAccess = await entitlementsService.canAccessPlanContent(
-        userId,
+        userProfile.id,
         planId,
         userProfile.role
       );
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     if (groupId) {
       // Check specific group access
       const hasAccess = await entitlementsService.canAccessGroupContent(
-        userId,
+        userProfile.id,
         groupId,
         userProfile.role
       );
@@ -67,8 +67,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Get full user library
-    const library = await entitlementsService.getUserLibrary(userId);
-    const summary = await entitlementsService.getUserAccessSummary(userId);
+    const library = await entitlementsService.getUserLibrary(userProfile.id);
+    const summary = await entitlementsService.getUserAccessSummary(userProfile.id);
 
     return NextResponse.json({
       success: true,
