@@ -41,9 +41,9 @@ export async function GET(request: NextRequest) {
     let purchases;
     
     if (status === 'completed') {
-      purchases = await purchasesService.getUserCompletedPurchases(userId);
+      purchases = await purchasesService.getUserCompletedPurchases(userProfile.id);
     } else {
-      purchases = await purchasesService.getUserPurchases(userId);
+      purchases = await purchasesService.getUserPurchases(userProfile.id);
     }
 
     return NextResponse.json({
