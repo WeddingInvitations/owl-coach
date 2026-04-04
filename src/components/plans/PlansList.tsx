@@ -8,6 +8,22 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { PlanQuickViewModal } from './PlanQuickViewModal';
+
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      div: any;
+      img: any;
+      span: any;
+      select: any;
+      option: any;
+      button: any;
+      input: any;
+      form: any;
+    }
+  }
+}
 
 interface PlansListProps {
   plans?: TrainingPlan[];
@@ -33,6 +49,18 @@ export function PlansList({
   const [searchTerm, setSearchTerm] = React.useState('');
   const [selectedDifficulty, setSelectedDifficulty] = React.useState<string>('');
   const [sortBy, setSortBy] = React.useState<string>('recent');
+  const [quickViewPlan, setQuickViewPlan] = React.useState<TrainingPlan | null>(null);
+  const [quickViewOpen, setQuickViewOpen] = React.useState(false);
+
+  const handleQuickView = (plan: TrainingPlan) => {
+    setQuickViewPlan(plan);
+    setQuickViewOpen(true);
+  };
+
+  const handleCloseQuickView = () => {
+    setQuickViewOpen(false);
+    setQuickViewPlan(null);
+  };
 
   // Filter and sort plans
   const filteredPlans = React.useMemo(() => {
@@ -104,14 +132,14 @@ export function PlansList({
         <Input
           placeholder="Search plans..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
           className="md:max-w-xs"
         />
         
         <div className="flex gap-2">
           <select
             value={selectedDifficulty}
-            onChange={(e) => setSelectedDifficulty(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedDifficulty(e.target.value)}
             className="px-3 py-2 border rounded-md text-sm"
           >
             <option value="">Todas las dificultades</option>
@@ -122,7 +150,7 @@ export function PlansList({
 
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSortBy(e.target.value)}
             className="px-3 py-2 border rounded-md text-sm"
           >
             <option value="recent">Más recientes</option>
@@ -178,18 +206,20 @@ export function PlansList({
         />
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredPlans.map((plan) => (
-            <PlanCard
-              key={plan.id}
-              plan={plan}
-              showPurchaseButton={showPurchaseButtons}
-              showManageButton={showManageButtons}
-              userHasAccess={userAccess.includes(plan.id)}
-              onPurchase={onPurchase}
-            />
+          {filteredPlans.map((plan: TrainingPlan) => (
+            <div key={plan.id} className="cursor-pointer" onClick={() => handleQuickView(plan)}>
+              <PlanCard
+                plan={plan}
+                showPurchaseButton={showPurchaseButtons}
+                showManageButton={showManageButtons}
+                userHasAccess={userAccess.includes(plan.id)}
+                onPurchase={onPurchase}
+              />
+            </div>
           ))}
         </div>
       )}
+      <PlanQuickViewModal plan={quickViewPlan} isOpen={quickViewOpen} onClose={handleCloseQuickView} />
     </div>
   );
 }
