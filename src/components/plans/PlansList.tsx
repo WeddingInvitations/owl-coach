@@ -10,20 +10,6 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { PlanQuickViewModal } from './PlanQuickViewModal';
 
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      div: any;
-      img: any;
-      span: any;
-      select: any;
-      option: any;
-      button: any;
-      input: any;
-      form: any;
-    }
-  }
-}
 
 interface PlansListProps {
   plans?: TrainingPlan[];
