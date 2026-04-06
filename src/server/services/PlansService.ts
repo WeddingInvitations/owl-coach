@@ -99,22 +99,15 @@ export class PlansService {
       return null;
     }
 
-    // If no user is logged in, only return preview content
+    // If no user is logged in, hide exercises
     if (!userId || !userRole) {
-      return {
-        ...plan,
-        fullModules: [], // Block full content
-      };
+      return { ...plan, exercises: [] };
     }
 
     // Check if user has access to full content
     const hasAccess = await this.canUserAccessPlan(userId, planId, userRole);
-    
     if (!hasAccess) {
-      return {
-        ...plan,
-        fullModules: [], // Block full content
-      };
+      return { ...plan, exercises: [] };
     }
 
     return plan;

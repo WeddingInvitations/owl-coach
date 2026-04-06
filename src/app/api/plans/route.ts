@@ -76,9 +76,7 @@ export async function POST(request: NextRequest) {
     const fixedData = {
       ...validatedData,
       coverImage: typeof validatedData.coverImage === 'string' ? validatedData.coverImage : '',
-      fullModules: Array.isArray(validatedData.fullModules)
-        ? validatedData.fullModules.filter((m) => typeof m === 'object' && m !== null && 'id' in m)
-        : [],
+      exercises: Array.isArray(validatedData.exercises) ? validatedData.exercises : [],
     };
     const planId = await plansService.createPlan(
       fixedData,

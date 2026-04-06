@@ -82,7 +82,7 @@ export default function AdminLayout({
       </Card>
 
       {/* Admin Navigation */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-5">
         <Link href="/app/admin/users">
           <Card className={`cursor-pointer transition-colors ${
             isActive('/app/admin/users') ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
@@ -103,18 +103,6 @@ export default function AdminLayout({
               <div className="text-2xl mb-2">📚</div>
               <div className="font-medium">Planes</div>
               <div className="text-xs text-muted-foreground">Todos los planes de entrenamiento</div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/app/admin/modules">
-          <Card className={`cursor-pointer transition-colors ${
-            isActive('/app/admin/modules') ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
-          }`}>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl mb-2">🧩</div>
-              <div className="font-medium">Módulos</div>
-              <div className="text-xs text-muted-foreground">Crear y gestionar módulos</div>
             </CardContent>
           </Card>
         </Link>

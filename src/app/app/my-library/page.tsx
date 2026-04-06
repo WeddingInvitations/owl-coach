@@ -201,13 +201,13 @@ export default function MyLibraryPage() {
                     </div>
                     <div className="flex items-center space-x-1">
                       <span>📚</span>
-                      <span>{plan.previewModules.length + plan.fullModules.length} módulos</span>
+                      <span>{plan.exercises?.length ?? 0} ejercicios</span>
                     </div>
                   </div>
 
                   {/* Actions */}
                   <div className="flex space-x-2">
-                    <Link href={`/app/plans/${plan.slug}?access=true`} className="flex-1">
+                    <Link href={`/app/plans/${plan.slug}`} className="flex-1">
                       <Button className="w-full">
                         Comenzar Entrenamiento
                       </Button>

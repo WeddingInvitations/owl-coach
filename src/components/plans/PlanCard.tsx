@@ -71,7 +71,7 @@ export function PlanCard({
               <span className="text-xs">📚</span>
             </div>
             <span className="text-sm text-muted-foreground">
-              {plan.previewModules.length} módulos de vista previa, {plan.fullModules.length} módulos en total
+              {plan.exercises?.length ?? 0} ejercicios
             </span>
           </div>
 
@@ -104,7 +104,7 @@ export function PlanCard({
           )}
           
           {isOwned && (
-            <Link href={`/app/plans/${plan.slug}?access=true`} className="block w-full">
+            <Link href={`/app/plans/${plan.slug}`} className="block w-full">
               <Button className="w-full">
                 Comenzar Entrenamiento
               </Button>

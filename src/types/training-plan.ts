@@ -1,14 +1,6 @@
 export type DifficultyLevel = 'principiante' | 'intermedio' | 'avanzado';
 export type Currency = 'EUR' | 'USD';
 
-export interface TrainingModule {
-  id: string;
-  title: string;
-  description: string;
-  exercises: Exercise[];
-  estimatedDuration: number; // en minutos
-}
-
 export interface Exercise {
   id: string;
   name: string;
@@ -33,12 +25,12 @@ export interface TrainingPlan {
   coachName: string;
   difficulty: DifficultyLevel;
   duration: number; // en semanas
+  estimatedDuration: number; // duración total estimada en minutos
   price: number;
   currency: Currency;
   isPublished: boolean;
   categoryIds: string[];
-  previewModules: TrainingModule[]; // visible para todos
-  fullModules: TrainingModule[]; // solo para compradores
+  exercises: Exercise[]; // ejercicios directamente en el plan
   createdAt: Date;
   updatedAt: Date;
 }
@@ -50,13 +42,22 @@ export interface CreateTrainingPlanData {
   coverImage: string;
   difficulty: DifficultyLevel;
   duration: number;
+  estimatedDuration: number;
   price: number;
   currency: Currency;
   categoryIds: string[];
-  previewModules: TrainingModule[];
-  fullModules: TrainingModule[];
+  exercises: Exercise[];
 }
 
 export interface UpdateTrainingPlanData extends Partial<CreateTrainingPlanData> {
   isPublished?: boolean;
+}
+
+// Kept for backward compatibility with existing Firestore documents
+export interface TrainingModule {
+  id: string;
+  title: string;
+  description: string;
+  exercises: Exercise[];
+  estimatedDuration: number;
 }

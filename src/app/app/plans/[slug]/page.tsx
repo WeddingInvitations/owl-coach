@@ -1,8 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
-import { TrainingPlan, TrainingModule } from '@/types/training-plan';
+import { useParams } from 'next/navigation';
+import { TrainingPlan, Exercise } from '@/types/training-plan';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -12,9 +12,7 @@ import { AuthUser } from '@/types/auth';
 
 export default function PlanDetailPage() {
   const params = useParams();
-  const searchParams = useSearchParams();
   const planSlug = params.slug as string;
-  const hasAccessParam = searchParams.get('access') === 'true';
 
   const [plan, setPlan] = React.useState<TrainingPlan | null>(null);
   const [hasAccess, setHasAccess] = React.useState(false);
@@ -145,8 +143,7 @@ export default function PlanDetailPage() {
     );
   }
 
-  const allModules = [...plan.previewModules, ...plan.fullModules];
-  const totalEstimatedTime = allModules.reduce((total, module) => total + module.estimatedDuration, 0);
+  const exercises: Exercise[] = plan.exercises ?? [];
 
   return (
     <div className="space-y-8">
@@ -189,65 +186,73 @@ export default function PlanDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Preview Modules */}
-          {plan.previewModules.length > 0 && (
+          {/* Exercises */}
+          {hasAccess && exercises.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Módulos de Vista Previa</CardTitle>
-                <CardDescription>
-                  Una muestra de lo que incluye este plan de entrenamiento
-                </CardDescription>
+                <CardTitle>Ejercicios del Plan</CardTitle>
+                <CardDescription>Todos los ejercicios incluidos en este plan</CardDescription>
               </CardHeader>
               <CardContent>
-                <ModulesList modules={plan.previewModules} isPreview={true} />
+                <div className="space-y-4">
+                  {exercises.map((ex, idx) => (
+                    <div key={ex.id} className="p-4 border rounded-lg">
+                      <div className="flex items-start justify-between mb-2">
+                        <h4 className="font-medium">{idx + 1}. {ex.name}</h4>
+                        {ex.tipo && <Badge variant="outline" className="text-xs">{ex.tipo}</Badge>}
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3">{ex.description}</p>
+                      <div className="flex flex-wrap gap-4 text-sm">
+                        {ex.sets > 0 && <span><span className="font-medium">{ex.sets}</span> series</span>}
+                        {ex.reps && <span><span className="font-medium">{ex.reps}</span> reps</span>}
+                        {ex.restTime > 0 && <span className="text-muted-foreground">{ex.restTime}s descanso</span>}
+                      </div>
+                      {ex.instructions && ex.instructions.length > 0 && (
+                        <ol className="mt-3 list-decimal list-inside space-y-1">
+                          {ex.instructions.map((step, i) => (
+                            <li key={i} className="text-sm text-muted-foreground">{step}</li>
+                          ))}
+                        </ol>
+                      )}
+                      {ex.videoUrl && (
+                        <a href={ex.videoUrl} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-sm text-primary underline">
+                          Ver vídeo
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           )}
 
-          {/* Full Modules */}
-          {hasAccess && plan.fullModules.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Programa de Entrenamiento Completo</CardTitle>
-                <CardDescription>
-                  Contenido de acceso completo - disponible para propietarios del plan
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ModulesList modules={plan.fullModules} isPreview={false} />
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Locked Content */}
-          {!hasAccess && plan.fullModules.length > 0 && (
+          {/* Locked content */}
+          {!hasAccess && (
             <Card className="relative">
               <div className="absolute inset-0 bg-muted/50 backdrop-blur-sm rounded-lg flex items-center justify-center z-10">
                 <div className="text-center p-6">
                   <div className="text-4xl mb-4">🔒</div>
                   <h3 className="text-lg font-semibold mb-2">Contenido Premium Bloqueado</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Compra este plan para desbloquear {plan.fullModules.length} módulos adicionales
+                    Compra este plan para acceder a todos los ejercicios
                   </p>
                   {user?.role === 'user' && (
-                    <Button onClick={handlePurchase} loading={purchaseLoading}>
-                      Desbloquear por {formatPrice(plan.price, plan.currency)}
+                    <Button onClick={handlePurchase} disabled={purchaseLoading}>
+                      {purchaseLoading ? 'Procesando...' : `Desbloquear por ${formatPrice(plan.price, plan.currency)}`}
                     </Button>
                   )}
                 </div>
               </div>
               <CardHeader>
                 <CardTitle>Programa de Entrenamiento Completo</CardTitle>
-                <CardDescription>
-                  {plan.fullModules.length} módulos con ejercicios e instrucciones detalladas
-                </CardDescription>
+                <CardDescription>Ejercicios con instrucciones detalladas</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {plan.fullModules.map((module, index) => (
-                    <div key={module.id} className="p-4 border rounded-lg opacity-50">
-                      <h4 className="font-medium">Módulo {index + 1}: {module.title}</h4>
-                      <p className="text-sm text-muted-foreground">{module.description}</p>
+                <div className="space-y-3 blur-sm pointer-events-none select-none">
+                  {[1,2,3].map(i => (
+                    <div key={i} className="p-4 border rounded-lg">
+                      <div className="h-4 bg-muted rounded w-3/4 mb-2" />
+                      <div className="h-3 bg-muted rounded w-full" />
                     </div>
                   ))}
                 </div>
@@ -273,9 +278,9 @@ export default function PlanDetailPage() {
                 <Button 
                   className="w-full" 
                   onClick={handlePurchase}
-                  loading={purchaseLoading}
+                  disabled={purchaseLoading}
                 >
-                  Comprar Plan
+                  {purchaseLoading ? 'Procesando...' : 'Comprar Plan'}
                 </Button>
               )}
               
@@ -313,13 +318,15 @@ export default function PlanDetailPage() {
                 <Badge variant="outline">{formatDifficulty(plan.difficulty)}</Badge>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Total Módulos</span>
-                <span className="font-medium">{allModules.length}</span>
+                <span className="text-muted-foreground">Ejercicios</span>
+                <span className="font-medium">{plan.exercises?.length ?? 0}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Tiempo Estimado</span>
-                <span className="font-medium">{formatEstimatedDuration(totalEstimatedTime)}</span>
-              </div>
+              {plan.estimatedDuration > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Tiempo Estimado</span>
+                  <span className="font-medium">{formatEstimatedDuration(plan.estimatedDuration)}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Coach</span>
                 <span className="font-medium">{plan.coachName}</span>
@@ -332,34 +339,3 @@ export default function PlanDetailPage() {
   );
 }
 
-function ModulesList({ modules, isPreview }: { modules: TrainingModule[], isPreview: boolean }) {
-  return (
-    <div className="space-y-4">
-      {modules.map((module, index) => (
-        <div key={module.id} className="p-4 border rounded-lg">
-          <div className="flex items-start justify-between mb-2">
-            <h4 className="font-medium">
-              Módulo {index + 1}: {module.title}
-            </h4>
-            <div className="flex items-center space-x-2">
-              {isPreview && (
-                <Badge variant="outline" className="text-xs">
-                  Vista previa
-                </Badge>
-              )}
-              <span className="text-xs text-muted-foreground">
-                {formatEstimatedDuration(module.estimatedDuration)}
-              </span>
-            </div>
-          </div>
-          <p className="text-sm text-muted-foreground mb-3">
-            {module.description}
-          </p>
-          <div className="text-xs text-muted-foreground">
-            {module.exercises.length} ejercicios
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}

@@ -2,18 +2,12 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { TrainingModule, Exercise } from '@/types/training-plan';
-
-interface ExistingModule {
-  id: string;
-  name: string;
-  description: string;
-  estimatedDuration?: number;
-  exercises?: Exercise[];
-}
+import { Badge } from "@/components/ui/Badge";
+import { Exercise } from '@/types/training-plan';
+import { ExerciseSortableList } from '@/components/plans/ExerciseSortableList';
 
 interface TrainingPlan {
   id: string;
@@ -25,15 +19,28 @@ interface TrainingPlan {
   coachName: string;
   difficulty: string;
   duration: number;
+  estimatedDuration: number;
   price: number;
   currency: string;
   isPublished: boolean;
   categoryIds: string[];
-  previewModules: any[];
-  fullModules: any[];
+  exercises: Exercise[];
   createdAt: string;
   updatedAt: string;
 }
+
+const EMPTY_EXERCISE: Exercise = {
+  id: '',
+  name: '',
+  description: '',
+  tipo: '',
+  sets: 0,
+  reps: '',
+  restTime: 0,
+  videoUrl: '',
+  imageUrl: '',
+  instructions: [],
+};
 
 const PlanEditPage = ({ params }: { params: { slug: string } }) => {
 
@@ -43,28 +50,20 @@ const PlanEditPage = ({ params }: { params: { slug: string } }) => {
   const [error, setError] = useState("");
   const [editPlan, setEditPlan] = useState<TrainingPlan | null>(null);
   const [saving, setSaving] = useState(false);
-  
-  // Estado para módulos existentes
-  const [existingModules, setExistingModules] = useState<ExistingModule[]>([]);
-  const [selectedExistingModules, setSelectedExistingModules] = useState<string[]>([]);
+  const [saveError, setSaveError] = useState('');
+  const [newTag, setNewTag] = useState('');
+  const [currentExercise, setCurrentExercise] = useState<Exercise>(EMPTY_EXERCISE);
+  const [exError, setExError] = useState<{ name?: string; desc?: string }>({});
+  const [existingExercises, setExistingExercises] = useState<Exercise[]>([]);
+  const [selectedLibIds, setSelectedLibIds] = useState<string[]>([]);
+  const [showLibPicker, setShowLibPicker] = useState(true);
+  const [libSearch, setLibSearch] = useState('');
 
-  // Cargar módulos existentes
   useEffect(() => {
-    const fetchExistingModules = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
-        const res = await fetch("/api/admin/modules", {
-          headers: { "Authorization": `Bearer ${token}` },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setExistingModules(data.modules || []);
-        }
-      } catch (error) {
-        console.error("Error fetching existing modules:", error);
-      }
-    };
-    fetchExistingModules();
+    const token = localStorage.getItem('authToken');
+    fetch('/api/admin/exercises', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(d => { if (d.success) setExistingExercises(d.exercises ?? []); });
   }, []);
 
   useEffect(() => {
@@ -74,9 +73,7 @@ const PlanEditPage = ({ params }: { params: { slug: string } }) => {
       try {
         const token = localStorage.getItem("authToken");
         const res = await fetch(`/api/plans/${params.slug}`, {
-          headers: {
-            "Authorization": `Bearer ${token}`,
-          },
+          headers: { "Authorization": `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("No se pudo cargar el plan");
         const data = await res.json();
@@ -90,251 +87,326 @@ const PlanEditPage = ({ params }: { params: { slug: string } }) => {
   }, [params.slug]);
 
   useEffect(() => {
-    if (plan) setEditPlan(plan);
+    if (plan) setEditPlan({ ...plan, exercises: plan.exercises ?? [] });
   }, [plan]);
 
-  // Variables para los returns condicionales
-  let content: React.ReactNode = null;
-  if (loading) {
-    content = <div>Cargando...</div>;
-  } else if (error) {
-    content = <div>Error: {error}</div>;
-  } else if (!plan) {
-    content = <div>No se encontró el plan.</div>;
-  } else if (plan.isPublished) {
-    content = (
-      <Card>
-        <CardHeader>
-          <CardTitle>Plan publicado</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-4">Este plan ya está publicado y no puede ser editado.</div>
-        </CardContent>
-      </Card>
-    );
-  } else if (!editPlan) {
-    content = null;
-  }
+  if (loading) return <div className="p-8">Cargando...</div>;
+  if (error) return <div className="p-8 text-destructive">Error: {error}</div>;
+  if (!plan || !editPlan) return <div className="p-8">No se encontró el plan.</div>;
 
-
-  if (content !== null) {
-    return content;
-  }
-
-  // Si editPlan es null, no renderizar el formulario
-  if (!editPlan) {
-    return null;
-  }
-
-  const handleChange = (field: keyof TrainingPlan, value: any) => {
+  const handleChange = (field: keyof TrainingPlan, value: any) =>
     setEditPlan(prev => prev ? { ...prev, [field]: value } : prev);
+
+  // Tags
+  const addTag = () => {
+    const tag = newTag.trim();
+    if (tag && !editPlan.categoryIds.includes(tag)) {
+      handleChange('categoryIds', [...editPlan.categoryIds, tag]);
+      setNewTag('');
+    }
+  };
+  const removeTag = (tag: string) =>
+    handleChange('categoryIds', editPlan.categoryIds.filter(t => t !== tag));
+
+  // Exercises
+  const addExercise = () => {
+    const errs: { name?: string; desc?: string } = {};
+    if (!currentExercise.name?.trim()) errs.name = 'El nombre es requerido';
+    if (!currentExercise.description?.trim()) errs.desc = 'La descripción es requerida';
+    if (Object.keys(errs).length) { setExError(errs); return; }
+    const ex: Exercise = { ...currentExercise, id: Date.now().toString() };
+    handleChange('exercises', [...editPlan.exercises, ex]);
+    setCurrentExercise(EMPTY_EXERCISE);
+    setExError({});
   };
 
-  // Añadir módulos existentes al plan
-  const addExistingModulesToPlan = () => {
-    const modulesToAdd = existingModules.filter(m => selectedExistingModules.includes(m.id));
-    setEditPlan((prev) => prev ? ({
-      ...prev,
-      fullModules: [...(prev.fullModules || []), ...modulesToAdd.map(m => ({
-        id: m.id,
-        title: m.name || '',
-        description: m.description || '',
-        exercises: (m.exercises || []).map((ex: any) => ({
-          id: ex.id || '',
-          name: ex.name || '',
-          description: ex.description || '',
-          sets: ex.sets || 0,
-          reps: ex.reps || '',
-          restTime: ex.restTime || 0,
-          videoUrl: ex.videoUrl || '',
-          imageUrl: ex.imageUrl || '',
-          instructions: Array.isArray(ex.instructions) ? ex.instructions : [],
-        })),
-        estimatedDuration: m.estimatedDuration || 0,
-      }))]
-    }) : prev);
-    setSelectedExistingModules([]);
-  };
-
-  // Eliminar módulo de previewModules
-  const removePreviewModule = (moduleId: string) => {
-    setEditPlan(prev => prev ? ({
-      ...prev,
-      previewModules: prev.previewModules.filter((m: TrainingModule) => m.id !== moduleId)
-    }) : prev);
-  };
-
-  // Eliminar módulo de fullModules
-  const removeFullModule = (moduleId: string) => {
-    setEditPlan(prev => prev ? ({
-      ...prev,
-      fullModules: (prev.fullModules || []).filter((m: TrainingModule) => m.id !== moduleId)
-    }) : prev);
-  };
-
-  const handleModuleChange = (idx: number, module: Partial<TrainingModule>) => {
-    setEditPlan(prev => prev ? {
-      ...prev,
-      previewModules: prev.previewModules.map((m: TrainingModule, i: number) => i === idx ? { ...m, ...module } : m)
-    } : prev);
-  };
-
-  const handleExerciseChange = (modIdx: number, exIdx: number, exercise: Partial<Exercise>) => {
-    setEditPlan(prev => prev ? {
-      ...prev,
-      previewModules: prev.previewModules.map((m: TrainingModule, i: number) => i === modIdx ? {
-        ...m,
-        exercises: m.exercises.map((ex: Exercise, j: number) => j === exIdx ? { ...ex, ...exercise } : ex)
-      } : m)
-    } : prev);
+  const addFromLibrary = () => {
+    const toAdd = existingExercises.filter(e => selectedLibIds.includes(e.id));
+    const existingIds = new Set(editPlan.exercises.map(e => e.id));
+    const unique = toAdd.filter(e => !existingIds.has(e.id));
+    handleChange('exercises', [...editPlan.exercises, ...unique]);
+    setSelectedLibIds([]);
+    setShowLibPicker(false);
   };
 
   const handleSave = async () => {
     setSaving(true);
+    setSaveError('');
     try {
       const token = localStorage.getItem("authToken");
       const res = await fetch(`/api/plans/${editPlan.id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify(editPlan),
       });
-      if (!res.ok) throw new Error("Error al guardar el plan");
-      // Opcional: feedback o redirección
+      if (!res.ok) {
+        const err = await res.json();
+        setSaveError(err.error || 'Error al guardar el plan');
+      }
     } catch (err) {
-      alert((err as Error).message);
+      setSaveError((err as Error).message);
     }
     setSaving(false);
   };
 
+  const handlePublish = async () => {
+    handleChange('isPublished', true);
+    await handleSave();
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header */}
       <Card>
-        <CardHeader>
-          <CardTitle>Editar Plan: {editPlan.title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-4 grid gap-2">
-            <Input label="Título" value={editPlan.title} onChange={e => handleChange("title", e.target.value)} />
-            <Input label="Descripción corta" value={editPlan.shortDescription} onChange={e => handleChange("shortDescription", e.target.value)} />
-            <Input label="Descripción completa" value={editPlan.fullDescription} onChange={e => handleChange("fullDescription", e.target.value)} />
-            {/* Otros campos básicos... */}
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Editar Plan: {editPlan.title}</CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              {editPlan.isPublished
+                ? <span className="text-green-600 font-medium">Publicado</span>
+                : <span className="text-yellow-600 font-medium">Borrador</span>}
+            </p>
           </div>
-          <Button onClick={handleSave} loading={saving} className="mt-4">Guardar cambios</Button>
+          <div className="flex gap-2">
+            {!editPlan.isPublished && (
+              <Button variant="outline" onClick={handlePublish} disabled={saving}>
+                Publicar
+              </Button>
+            )}
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? 'Guardando...' : 'Guardar cambios'}
+            </Button>
+          </div>
+        </CardHeader>
+      </Card>
+
+      {/* Basic info */}
+      <Card>
+        <CardHeader><CardTitle>Información Básica</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Título</label>
+            <Input value={editPlan.title} onChange={e => handleChange("title", e.target.value)} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Descripción corta</label>
+            <textarea
+              value={editPlan.shortDescription}
+              onChange={e => handleChange("shortDescription", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+              rows={3}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Descripción completa</label>
+            <textarea
+              value={editPlan.fullDescription}
+              onChange={e => handleChange("fullDescription", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+              rows={5}
+            />
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <label className="block text-sm font-medium mb-1">Nivel de dificultad</label>
+              <select
+                value={editPlan.difficulty}
+                onChange={e => handleChange("difficulty", e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="principiante">Principiante</option>
+                <option value="intermedio">Intermedio</option>
+                <option value="avanzado">Avanzado</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Duración (semanas)</label>
+              <Input type="number" min="1" value={editPlan.duration} onChange={e => handleChange("duration", parseInt(e.target.value) || 1)} />
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <label className="block text-sm font-medium mb-1">Duración estimada (minutos)</label>
+              <Input type="number" min="0" value={editPlan.estimatedDuration ?? 0} onChange={e => handleChange("estimatedDuration", parseInt(e.target.value) || 0)} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Precio</label>
+              <Input type="number" min="0" step="0.01" value={editPlan.price} onChange={e => handleChange("price", parseFloat(e.target.value) || 0)} />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">URL de imagen de portada</label>
+            <Input type="url" value={editPlan.coverImage || ''} onChange={e => handleChange("coverImage", e.target.value)} placeholder="https://ejemplo.com/imagen.jpg" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Etiquetas / Categorías</label>
+            <div className="flex gap-2 mb-2">
+              <Input value={newTag} onChange={e => setNewTag(e.target.value)} placeholder="Nueva etiqueta" onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTag())} />
+              <Button type="button" onClick={addTag}>Añadir</Button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {editPlan.categoryIds.map(tag => (
+                <Badge key={tag} variant="secondary" className="cursor-pointer" onClick={() => removeTag(tag)}>
+                  {tag} ✕
+                </Badge>
+              ))}
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Gestión de módulos existentes */}
+      {/* Exercises */}
       <Card>
         <CardHeader>
-          <CardTitle>Añadir Módulos Existentes</CardTitle>
+          <CardTitle>Ejercicios del Plan</CardTitle>
+          <CardDescription>Gestiona los ejercicios del plan. Usa las flechas para reordenar.</CardDescription>
         </CardHeader>
-        <CardContent>
-          {existingModules.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground mb-2">Selecciona módulos existentes para añadir al plan:</p>
-              {existingModules.map(mod => (
-                <div key={mod.id} className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id={mod.id}
-                    checked={selectedExistingModules.includes(mod.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedExistingModules(prev => [...prev, mod.id]);
-                      } else {
-                        setSelectedExistingModules(prev => prev.filter(id => id !== mod.id));
-                      }
-                    }}
-                  />
-                  <label htmlFor={mod.id} className="text-sm">{mod.name} - {mod.description}</label>
-                </div>
-              ))}
-              <Button 
-                type="button" 
-                onClick={addExistingModulesToPlan} 
-                disabled={selectedExistingModules.length === 0} 
-                className="mt-2"
-              >
-                Añadir Módulos Seleccionados
-              </Button>
+        <CardContent className="space-y-6">
+          {editPlan.exercises.length > 0 && (
+            <div>
+              <h4 className="font-medium mb-3">Ejercicios ({editPlan.exercises.length})</h4>
+              <ExerciseSortableList
+                exercises={editPlan.exercises}
+                onChange={exs => handleChange('exercises', exs)}
+                removeLabel="Eliminar"
+              />
             </div>
           )}
-        </CardContent>
-      </Card>
 
-      {/* Módulos de Vista Previa */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Módulos de Vista Previa ({editPlan.previewModules.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {editPlan.previewModules.map((mod, modIdx) => (
-            <div key={mod.id} className="mb-4 p-4 border rounded">
-              <div className="flex justify-between items-start mb-3">
-                <h4 className="font-semibold">{mod.title}</h4>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => removePreviewModule(mod.id)}
-                >
-                  Eliminar
+          {/* Library picker */}
+          {existingExercises.length > 0 && (
+            <div className="border rounded-lg p-4 bg-blue-50/50">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-medium">Añadir desde biblioteca de ejercicios</h4>
+                <Button type="button" variant="outline" size="sm" onClick={() => setShowLibPicker(v => !v)}>
+                  {showLibPicker ? 'Ocultar' : `Seleccionar (${existingExercises.length} disponibles)`}
                 </Button>
               </div>
-              <Input label="Título del módulo" value={mod.title} onChange={e => handleModuleChange(modIdx, { title: e.target.value })} />
-              <Input label="Descripción" value={mod.description} onChange={e => handleModuleChange(modIdx, { description: e.target.value })} />
-              <Input label="Duración estimada" type="number" value={mod.estimatedDuration} onChange={e => handleModuleChange(modIdx, { estimatedDuration: Number(e.target.value) })} />
-              <div className="ml-4">
-                <h5 className="font-semibold mb-2">Ejercicios</h5>
-                {mod.exercises.map((ex: Exercise, exIdx: number) => (
-                  <div key={ex.id} className="mb-2 p-1 border rounded">
-                    <Input label="Nombre" value={ex.name} onChange={e => handleExerciseChange(modIdx, exIdx, { name: e.target.value })} />
-                    <Input label="Descripción" value={ex.description} onChange={e => handleExerciseChange(modIdx, exIdx, { description: e.target.value })} />
-                    <Input label="Series" type="number" value={ex.sets} onChange={e => handleExerciseChange(modIdx, exIdx, { sets: Number(e.target.value) })} />
-                    <Input label="Repeticiones" value={ex.reps} onChange={e => handleExerciseChange(modIdx, exIdx, { reps: e.target.value })} />
-                    <Input label="Descanso (segundos)" type="number" value={ex.restTime} onChange={e => handleExerciseChange(modIdx, exIdx, { restTime: Number(e.target.value) })} />
-                    <Input label="URL de video" value={ex.videoUrl || ""} onChange={e => handleExerciseChange(modIdx, exIdx, { videoUrl: e.target.value })} />
-                    <Input label="URL de imagen" value={ex.imageUrl || ""} onChange={e => handleExerciseChange(modIdx, exIdx, { imageUrl: e.target.value })} />
-                  </div>
-                ))}
-              </div>
+              {showLibPicker && (
+                <div className="space-y-3">
+                  <Input
+                    placeholder="Buscar ejercicio..."
+                    value={libSearch}
+                    onChange={e => setLibSearch(e.target.value)}
+                  />
+                  <ul className="max-h-52 overflow-y-auto space-y-1">
+                    {existingExercises
+                      .filter(e => e.name.toLowerCase().includes(libSearch.toLowerCase()))
+                      .map(ex => (
+                        <li key={ex.id} className="flex items-start gap-2 p-2 rounded hover:bg-muted">
+                          <input
+                            type="checkbox"
+                            className="mt-1"
+                            checked={selectedLibIds.includes(ex.id)}
+                            onChange={e => setSelectedLibIds(prev =>
+                              e.target.checked ? [...prev, ex.id] : prev.filter(id => id !== ex.id)
+                            )}
+                          />
+                          <div>
+                            <div className="font-medium text-sm">{ex.name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {ex.sets > 0 ? `${ex.sets} series` : ''}{ex.reps ? ` × ${ex.reps}` : ''}
+                              {ex.tipo ? ` · ${ex.tipo}` : ''}
+                            </div>
+                          </div>
+                        </li>
+                      ))}
+                  </ul>
+                  <Button
+                    type="button"
+                    disabled={selectedLibIds.length === 0}
+                    onClick={addFromLibrary}
+                  >
+                    Añadir {selectedLibIds.length > 0 ? `(${selectedLibIds.length})` : ''} seleccionados
+                  </Button>
+                </div>
+              )}
             </div>
-          ))}
+          )}
+
+          {/* Add exercise form */}
+          <div className="border rounded-lg p-4 bg-muted/30">
+            <h4 className="font-medium mb-4">Añadir ejercicio</h4>
+            <div className="space-y-3">
+              <div className="grid gap-3 md:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Nombre</label>
+                  <Input value={currentExercise.name} onChange={e => setCurrentExercise(p => ({ ...p, name: e.target.value }))} placeholder="Nombre del ejercicio" />
+                  {exError.name && <p className="text-sm text-destructive mt-1">{exError.name}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Tipo</label>
+                  <Input value={currentExercise.tipo || ''} onChange={e => setCurrentExercise(p => ({ ...p, tipo: e.target.value }))} placeholder="EMOM, AMRAP…" />
+                </div>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Series</label>
+                  <Input type="number" min="0" value={currentExercise.sets} onChange={e => setCurrentExercise(p => ({ ...p, sets: parseInt(e.target.value) || 0 }))} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Repeticiones</label>
+                  <Input value={currentExercise.reps} onChange={e => setCurrentExercise(p => ({ ...p, reps: e.target.value }))} placeholder="10-12" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Descanso (seg)</label>
+                  <Input type="number" min="0" value={currentExercise.restTime} onChange={e => setCurrentExercise(p => ({ ...p, restTime: parseInt(e.target.value) || 0 }))} />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Descripción</label>
+                <textarea
+                  value={currentExercise.description}
+                  onChange={e => setCurrentExercise(p => ({ ...p, description: e.target.value }))}
+                  placeholder="Descripción del ejercicio"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                  rows={2}
+                />
+                {exError.desc && <p className="text-sm text-destructive mt-1">{exError.desc}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">URL de vídeo (opcional)</label>
+                <Input type="url" value={currentExercise.videoUrl || ''} onChange={e => setCurrentExercise(p => ({ ...p, videoUrl: e.target.value }))} placeholder="https://youtube.com/..." />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Instrucciones (una por línea)</label>
+                <textarea
+                  value={currentExercise.instructions?.join('\n') || ''}
+                  onChange={e => setCurrentExercise(p => ({ ...p, instructions: e.target.value.split('\n').filter(i => i.trim()) }))}
+                  placeholder="Paso 1&#10;Paso 2&#10;Paso 3"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                  rows={3}
+                />
+              </div>
+
+              <Button type="button" onClick={addExercise} className="w-full">
+                ＋ Añadir ejercicio al plan
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Módulos Existentes Añadidos */}
-      {editPlan.fullModules && editPlan.fullModules.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Módulos Existentes Añadidos ({editPlan.fullModules.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {editPlan.fullModules.map((module: TrainingModule) => (
-              <div key={module.id} className="mb-3 p-4 border rounded">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h5 className="font-medium">{module.title}</h5>
-                    <p className="text-sm text-muted-foreground mb-2">{module.description}</p>
-                    <div className="text-sm text-muted-foreground">
-                      {module.exercises.length} ejercicios • Módulo existente
-                    </div>
-                  </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => removeFullModule(module.id)}
-                  >
-                    Eliminar
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+      {/* Footer save */}
+      {saveError && (
+        <div className="p-3 rounded bg-destructive/10 text-destructive text-sm">{saveError}</div>
       )}
+      <div className="flex gap-4 pb-8">
+        <Button onClick={handleSave} disabled={saving} className="flex-1">
+          {saving ? 'Guardando...' : 'Guardar cambios'}
+        </Button>
+        <Button variant="outline" onClick={() => router.back()}>
+          Volver
+        </Button>
+      </div>
     </div>
   );
 };

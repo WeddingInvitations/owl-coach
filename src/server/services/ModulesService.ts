@@ -39,23 +39,8 @@ export async function updateModule(id: string, data: Partial<{ name: string; des
   await ref.update({ ...data, updatedAt: new Date().toISOString() });
 }
 
-import { trainingPlansRepository } from '@/server/repositories/TrainingPlansRepository';
-
 export async function deleteModule(id: string) {
   const db = getFirestore(adminApp);
-  // Check if module is part of any published plan
-  const publishedPlans = await trainingPlansRepository.getPublished();
-  const isInPublishedPlan = publishedPlans.some(plan => {
-    // Check both previewModules and fullModules
-    const allModules = [
-      ...(plan.previewModules || []),
-      ...(plan.fullModules || [])
-    ];
-    return allModules.some(module => module.id === id);
-  });
-  if (isInPublishedPlan) {
-    throw new Error('No se puede eliminar el módulo porque está incluido en un plan publicado.');
-  }
   const ref = db.collection('modules').doc(id);
   await ref.delete();
 }

@@ -54,10 +54,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         plan = await plansService.getPlanWithAccessControl(resolved.id, userId, userRole as any);
       }
     } else {
-      // Public access - no full content
+      // Public access - hide exercises content
       plan = await resolvedPlan(id);
       if (plan) {
-        plan.fullModules = []; // Hide full content for unauthenticated users
+        plan = { ...plan, exercises: [] };
       }
     }
 
