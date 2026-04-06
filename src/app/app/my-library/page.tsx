@@ -209,7 +209,7 @@ export default function MyLibraryPage() {
                   <div className="flex space-x-2">
                     <Link href={`/app/plans/${plan.slug}`} className="flex-1">
                       <Button className="w-full">
-                        Comenzar Entrenamiento
+                        Comenzar Entrenamiento 
                       </Button>
                     </Link>
                     <Link href={`/app/plans/${plan.slug}`}>
