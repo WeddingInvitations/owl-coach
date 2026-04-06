@@ -23,7 +23,7 @@ export default function MyLibraryPage() {
     try {
       const token = localStorage.getItem('authToken');
       if (!token) {
-        throw new Error('Please sign in to view your library');
+        throw new Error('Inicia sesión para ver tu biblioteca');
       }
 
       // Get user entitlements
@@ -34,7 +34,7 @@ export default function MyLibraryPage() {
       });
 
       if (!entitlementsResponse.ok) {
-        throw new Error('Failed to load your library');
+        throw new Error('No se pudo cargar tu biblioteca');
       }
 
       const entitlementsResult = await entitlementsResponse.json();
@@ -184,7 +184,7 @@ export default function MyLibraryPage() {
                     {plan.title}
                   </CardTitle>
                   <CardDescription>
-                    by {plan.coachName}
+                    por {plan.coachName}
                   </CardDescription>
                 </CardHeader>
 

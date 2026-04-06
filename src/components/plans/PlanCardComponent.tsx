@@ -36,7 +36,7 @@ export function PlanCard({
         </div>
         <div className="absolute top-4 right-4">
           <Badge variant={plan.isPublished ? 'success' : 'warning'}>
-            {plan.isPublished ? 'Published' : 'Draft'}
+            {plan.isPublished ? 'Publicado' : 'Borrador'}
           </Badge>
         </div>
       </div>
@@ -50,7 +50,7 @@ export function PlanCard({
               </Link>
             </CardTitle>
             <CardDescription className="mt-2">
-              by {plan.coachName}
+              por {plan.coachName}
             </CardDescription>
           </div>
           <div className="text-right">
@@ -74,7 +74,7 @@ export function PlanCard({
           </div>
           <div className="flex items-center space-x-1">
             <span>📚</span>
-            <span>{plan.previewModules.length + plan.fullModules.length} modules</span>
+            <span>{plan.previewModules.length + plan.fullModules.length} módulos</span>
           </div>
         </div>
 
@@ -82,23 +82,23 @@ export function PlanCard({
         <div className="flex space-x-2">
           <Link href={`/app/plans/${plan.slug}`} className="flex-1">
             <Button variant="outline" className="w-full">
-              View Details
+              Ver Detalle
             </Button>
           </Link>
 
-          {showPurchaseButton && !userHasAccess && (
+          {showPurchaseButton && !userHasAccess && plan.isPublished && (
             <Button 
               onClick={() => onPurchase?.(plan.id)}
               className="flex-1"
             >
-              Purchase
+              Comprar
             </Button>
           )}
 
           {userHasAccess && (
             <Link href={`/app/plans/${plan.slug}?access=true`} className="flex-1">
               <Button className="w-full">
-                Access Plan
+                Acceder al plan
               </Button>
             </Link>
           )}
@@ -106,7 +106,7 @@ export function PlanCard({
           {showManageButton && (
             <Link href={`/app/coach/plans/${plan.id}/edit`} className="flex-1">
               <Button variant="secondary" className="w-full">
-                Manage
+                Gestionar
               </Button>
             </Link>
           )}

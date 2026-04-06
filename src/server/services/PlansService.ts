@@ -79,12 +79,12 @@ export class PlansService {
   }
 
   async canUserAccessPlan(userId: string, planId: string, userRole: UserRole): Promise<boolean> {
-    // Owners can access all plans
-    if (userRole === 'owner') {
+    // Owners and coaches can access all plans
+    if (userRole === 'owner' || userRole === 'coach') {
       return true;
     }
 
-    // Check if user has purchased this plan
+    // Regular users: check if they have an entitlement for this plan
     const hasAccess = await entitlementsRepository.hasUserAccessToPlan(userId, planId);
     return hasAccess;
   }

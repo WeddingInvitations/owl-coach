@@ -168,7 +168,7 @@ export default function AdminPage() {
                 <div key={purchase.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex-1">
                     <div className="font-medium">
-                      Purchase #{purchase.id.slice(-8)}
+                      Compra #{purchase.id.slice(-8)}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       Usuario: {purchase.userId}

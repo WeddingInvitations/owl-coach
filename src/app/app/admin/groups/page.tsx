@@ -61,7 +61,7 @@ export default function AdminGroupsPage() {
   };
 
   const deleteGroup = async (groupId: string) => {
-    if (!confirm('Are you sure you want to delete this group?')) return;
+    if (!confirm('¿Estás seguro de que quieres eliminar este paquete?')) return;
 
     try {
       const response = await fetch(`/api/groups/${groupId}`, {
@@ -94,7 +94,7 @@ export default function AdminGroupsPage() {
   if (loading) {
     return (
       <div className="flex justify-center py-12">
-        <div>Loading groups...</div>
+        <div>Cargando paquetes...</div>
       </div>
     );
   }
@@ -104,23 +104,23 @@ export default function AdminGroupsPage() {
       {/* Header Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Plan Groups Management</CardTitle>
+          <CardTitle>Gestión de Paquetes de Planes</CardTitle>
           <CardDescription>
-            Manage training plan packages and bundles
+            Gestiona paquetes y bundles de planes de entrenamiento
           </CardDescription>
         </CardHeader>
         <CardContent>
           {/* Actions */}
           <div className="flex justify-between items-center mb-6">
             <Input
-              placeholder="Search groups by title, description, or tags..."
+              placeholder="Buscar paquetes por título, descripción o etiquetas..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="max-w-md"
             />
             <Button asChild>
               <Link href="/app/admin/groups/create">
-                Create Group
+                Crear paquete
               </Link>
             </Button>
           </div>
@@ -130,7 +130,7 @@ export default function AdminGroupsPage() {
             <Card>
               <CardContent className="p-4">
                 <div className="text-2xl font-bold">{groups.length}</div>
-                <div className="text-sm text-muted-foreground">Total Groups</div>
+                <div className="text-sm text-muted-foreground">Total paquetes</div>
               </CardContent>
             </Card>
             <Card>
@@ -138,7 +138,7 @@ export default function AdminGroupsPage() {
                 <div className="text-2xl font-bold">
                   {groups.reduce((total, g) => total + g.includedPlanIds.length, 0)}
                 </div>
-                <div className="text-sm text-muted-foreground">Plans in Groups</div>
+                <div className="text-sm text-muted-foreground">Planes en paquetes</div>
               </CardContent>
             </Card>
             <Card>
@@ -148,7 +148,7 @@ export default function AdminGroupsPage() {
                     ? Math.round(groups.reduce((sum, g) => sum + calculateDiscount(g), 0) / groups.length)
                     : 0}%
                 </div>
-                <div className="text-sm text-muted-foreground">Avg. Discount</div>
+                <div className="text-sm text-muted-foreground">Descuento medio</div>
               </CardContent>
             </Card>
           </div>
@@ -158,12 +158,12 @@ export default function AdminGroupsPage() {
       {/* Groups List */}
       <Card>
         <CardHeader>
-          <CardTitle>Groups ({filteredGroups.length})</CardTitle>
+          <CardTitle>Paquetes ({filteredGroups.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {filteredGroups.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              {groups.length === 0 ? 'No groups found' : 'No groups match the current search'}
+              {groups.length === 0 ? 'No se encontraron paquetes' : 'Ningún paquete coincide con la búsqueda'}
             </div>
           ) : (
             <div className="grid gap-4">
@@ -204,7 +204,7 @@ export default function AdminGroupsPage() {
                               
                               <div className="space-y-2 mb-3">
                                 <div className="text-sm font-medium">
-                                  Included Plans ({groupPlans.length}):
+                                  Planes incluidos ({groupPlans.length}):
                                 </div>
                                 <div className="grid gap-1">
                                   {groupPlans.slice(0, 3).map((plan) => (
@@ -214,7 +214,7 @@ export default function AdminGroupsPage() {
                                   ))}
                                   {groupPlans.length > 3 && (
                                     <div className="text-sm text-muted-foreground">
-                                      • +{groupPlans.length - 3} more plans
+                                      • +{groupPlans.length - 3} planes más
                                     </div>
                                   )}
                                 </div>
@@ -222,7 +222,7 @@ export default function AdminGroupsPage() {
                               
                               <div className="flex items-center gap-4 text-sm">
                                 <span className="text-muted-foreground">
-                                  {group.includedPlanIds.length} plans
+                                  {group.includedPlanIds.length} planes
                                 </span>
                                 <div className="flex items-center gap-2">
                                   {originalPrice > group.price && (
@@ -242,7 +242,7 @@ export default function AdminGroupsPage() {
                         <div className="flex flex-col gap-2 ml-4">
                           <Button variant="outline" size="sm" asChild>
                             <Link href={`/app/admin/groups/${group.id}`}>
-                              Edit
+                              Editar
                             </Link>
                           </Button>
                           <Button 
@@ -250,7 +250,7 @@ export default function AdminGroupsPage() {
                             size="sm"
                             onClick={() => deleteGroup(group.id)}
                           >
-                            Delete
+                            Eliminar
                           </Button>
                         </div>
                       </div>

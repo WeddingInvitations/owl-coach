@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useRouter } from "next/navigation";
+import { ExerciseSortableList } from "@/components/plans/ExerciseSortableList";
 
 interface Exercise {
   id: string;
@@ -329,21 +330,12 @@ const AdminModulesPage: React.FC = () => {
             <Input label="Duración estimada (minutos)" type="number" value={editModule.estimatedDuration} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditModule({ ...editModule, estimatedDuration: Number(e.target.value) })} required />
             <h3 className="font-semibold mt-4 mb-2">Ejercicios del módulo</h3>
             {editModule.exercises.length === 0 ? (
-              <div>No hay ejercicios en este módulo.</div>
+              <div className="text-sm text-muted-foreground">No hay ejercicios en este módulo.</div>
             ) : (
-              <ul>
-                {editModule.exercises.map((ex: Exercise, idx: number) => (
-                  <li key={ex.id || idx} className="mb-2 flex items-center gap-2">
-                    <span>{ex.name}</span>
-                    <Button type="button" variant="destructive" onClick={() => {
-                      setEditModule({
-                        ...editModule,
-                        exercises: editModule.exercises.filter((_, i) => i !== idx)
-                      });
-                    }}>Quitar</Button>
-                  </li>
-                ))}
-              </ul>
+              <ExerciseSortableList
+                exercises={editModule.exercises}
+                onChange={(exs) => setEditModule({ ...editModule, exercises: exs })}
+              />
             )}
             <h3 className="font-semibold mt-4 mb-2">Añadir ejercicios existentes</h3>
             {existingExercises.length === 0 ? (
@@ -464,15 +456,12 @@ const AdminModulesPage: React.FC = () => {
               <div className="mb-4">
                 <h4 className="font-semibold mb-2">Ejercicios añadidos al módulo</h4>
                 {newModule.exercises.length === 0 ? (
-                  <div>No hay ejercicios añadidos.</div>
+                  <div className="text-sm text-muted-foreground">No hay ejercicios añadidos.</div>
                 ) : (
-                  <ul>
-                    {newModule.exercises.map((ex: Exercise, idx: number) => (
-                      <li key={ex.id || idx} className="mb-2">
-                        <strong>{ex.name}</strong>: {ex.description} | Series: {ex.sets} | Reps: {ex.reps} | Descanso: {ex.restTime}s
-                      </li>
-                    ))}
-                  </ul>
+                  <ExerciseSortableList
+                    exercises={newModule.exercises}
+                    onChange={(exs) => setNewModule((prev: Module) => ({ ...prev, exercises: exs }))}
+                  />
                 )}
               </div>
               <Input label="Nombre del módulo" value={newModule.name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewModule({ ...newModule, name: e.target.value })} required />

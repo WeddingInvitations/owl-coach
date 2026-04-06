@@ -109,7 +109,7 @@ export default function PlansPage() {
       </div>
 
       <PlansList
-        plans={plans}
+        plans={user?.role === 'user' ? plans.filter(p => p.isPublished) : plans}
         loading={loading}
         error={error}
         showPurchaseButtons={user?.role === 'user'}

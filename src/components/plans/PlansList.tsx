@@ -78,7 +78,7 @@ export function PlansList({
   if (loading) {
     return (
       <div className="flex justify-center py-12">
-        <LoadingSpinner size="lg" text="Loading plans..." />
+        <LoadingSpinner size="lg" text="Cargando planes..." />
       </div>
     );
   }
@@ -86,11 +86,11 @@ export function PlansList({
   if (error) {
     return (
       <EmptyState
-        title="Error Loading Plans"
+        title="Error al cargar los planes"
         description={error}
         icon={<span className="text-4xl">⚠️</span>}
         action={onRefresh ? {
-          label: 'Try Again',
+          label: 'Reintentar',
           onClick: onRefresh
         } : undefined}
       />
@@ -102,7 +102,7 @@ export function PlansList({
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4">
         <Input
-          placeholder="Search plans..."
+          placeholder="Buscar planes..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="md:max-w-xs"

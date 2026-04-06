@@ -53,7 +53,7 @@ export function GroupCard({
               </Link>
             </CardTitle>
             <CardDescription className="mt-2">
-              by {group.coachName}
+              por {group.coachName}
             </CardDescription>
           </div>
           <div className="text-right">

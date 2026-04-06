@@ -102,7 +102,7 @@ export default function GroupsPage() {
   if (loading) {
     return (
       <div className="flex justify-center py-12">
-        <LoadingSpinner size="lg" text="Loading groups..." />
+        <LoadingSpinner size="lg" text="Cargando paquetes..." />
       </div>
     );
   }

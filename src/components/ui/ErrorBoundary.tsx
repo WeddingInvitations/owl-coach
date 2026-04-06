@@ -56,22 +56,22 @@ function DefaultErrorFallback({ error, reset }: ErrorFallbackProps) {
     <div className="flex items-center justify-center min-h-[400px] p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-destructive">Something went wrong</CardTitle>
+          <CardTitle className="text-destructive">Algo salió mal</CardTitle>
           <CardDescription>
-            An error occurred while rendering this component.
+            Ocurrió un error al cargar este componente.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
             <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
               <details>
-                <summary className="cursor-pointer font-medium">Error details</summary>
+                <summary className="cursor-pointer font-medium">Detalles del error</summary>
                 <pre className="mt-2 whitespace-pre-wrap text-xs">{error.message}</pre>
               </details>
             </div>
           )}
           <Button onClick={reset} className="w-full">
-            Try again
+            Reintentar
           </Button>
         </CardContent>
       </Card>

@@ -111,7 +111,7 @@ export function Header({ user }: HeaderProps) {
                 <div className="text-right">
                   <p className="text-sm font-medium">{user.displayName}</p>
                   <Badge variant="secondary" className="text-xs">
-                    {user.role}
+                    {user.role === 'owner' ? 'Propietario' : user.role === 'coach' ? 'Coach' : 'Usuario'}
                   </Badge>
                 </div>
                 <Button

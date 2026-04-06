@@ -79,7 +79,7 @@ export default function AdminPlansPage() {
   };
 
   const deletePlan = async (planId: string) => {
-    if (!confirm('Are you sure you want to delete this plan?')) return;
+    if (!confirm('¿Estás seguro de que quieres eliminar este plan?')) return;
 
     try {
       const { getCurrentUser } = await import('@/lib/firebase/auth');
@@ -102,11 +102,11 @@ export default function AdminPlansPage() {
         setPlans(plans.filter(plan => plan.id !== planId));
       } else {
         const errorData = await response.json();
-        alert(`Error deleting plan: ${errorData.error || 'Unknown error'}`);
+        alert(`Error al eliminar el plan: ${errorData.error || 'Error desconocido'}`);
       }
     } catch (error) {
       console.error('Error deleting plan:', error);
-      alert('Error deleting plan');
+      alert('Error al eliminar el plan');
     }
   };
 
@@ -124,7 +124,7 @@ export default function AdminPlansPage() {
   if (loading) {
     return (
       <div className="flex justify-center py-12">
-        <div>Loading plans...</div>
+        <div>Cargando planes...</div>
       </div>
     );
   }

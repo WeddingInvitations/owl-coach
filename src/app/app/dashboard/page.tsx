@@ -122,20 +122,20 @@ export default function DashboardPage() {
         {user.role === 'owner' && (
           <Card>
             <CardHeader>
-              <CardTitle>Admin Panel</CardTitle>
+              <CardTitle>Panel de Administración</CardTitle>
               <CardDescription>
-                Manage users, plans, and platform settings
+                Gestiona usuarios, planes y la configuración de la plataforma
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Link href="/app/admin/users">
-                <Button className="w-full">Manage Users</Button>
+                <Button className="w-full">Gestionar usuarios</Button>
               </Link>
               <Link href="/app/admin/plans">
-                <Button variant="outline" className="w-full">All Plans</Button>
+                <Button variant="outline" className="w-full">Todos los planes</Button>
               </Link>
               <Link href="/app/admin/groups">
-                <Button variant="ghost" className="w-full">All Groups</Button>
+                <Button variant="ghost" className="w-full">Todos los paquetes</Button>
               </Link>
             </CardContent>
           </Card>
@@ -144,20 +144,20 @@ export default function DashboardPage() {
         {(user.role === 'coach' || user.role === 'owner') && (
           <Card>
             <CardHeader>
-              <CardTitle>Coach Panel</CardTitle>
+              <CardTitle>Panel de Coach</CardTitle>
               <CardDescription>
-                Create and manage your training content
+                Crea y gestiona tu contenido de entrenamiento
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Link href="/app/coach/plans/create">
-                <Button className="w-full">Create New Plan</Button>
+                <Button className="w-full">Crear nuevo plan</Button>
               </Link>
               <Link href="/app/coach/plans">
-                <Button variant="outline" className="w-full">My Plans</Button>
+                <Button variant="outline" className="w-full">Mis planes</Button>
               </Link>
               <Link href="/app/coach/groups">
-                <Button variant="ghost" className="w-full">My Groups</Button>
+                <Button variant="ghost" className="w-full">Mis paquetes</Button>
               </Link>
             </CardContent>
           </Card>
@@ -166,20 +166,20 @@ export default function DashboardPage() {
         {user.role === 'user' && (
           <Card>
             <CardHeader>
-              <CardTitle>Your Training</CardTitle>
+              <CardTitle>Tu Entrenamiento</CardTitle>
               <CardDescription>
-                Continue your fitness journey
+                Continúa con tu progreso de entrenamiento
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Link href="/app/my-library">
-                <Button className="w-full">Continue Training</Button>
+                <Button className="w-full">Continuar entrenando</Button>
               </Link>
               <Link href="/app/plans">
-                <Button variant="outline" className="w-full">Find New Plans</Button>
+                <Button variant="outline" className="w-full">Encontrar nuevos planes</Button>
               </Link>
               <Link href="/app/groups">
-                <Button variant="ghost" className="w-full">Plan Packages</Button>
+                <Button variant="ghost" className="w-full">Paquetes de planes</Button>
               </Link>
             </CardContent>
           </Card>

@@ -38,14 +38,24 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       }
     }
 
+    // Helper: lookup by ID first, then fall back to slug
+    const resolvedPlan = async (planIdOrSlug: string) => {
+      const byId = await plansService.getPlanById(planIdOrSlug);
+      if (byId) return byId;
+      return await plansService.getPlanBySlug(planIdOrSlug);
+    };
+
     let plan;
     
     if (includeContent && userId && userRole) {
-      // Include content based on user permissions
-      plan = await plansService.getPlanWithAccessControl(id, userId, userRole as any);
+      // Resolve document first so we have the real Firestore ID
+      const resolved = await resolvedPlan(id);
+      if (resolved) {
+        plan = await plansService.getPlanWithAccessControl(resolved.id, userId, userRole as any);
+      }
     } else {
       // Public access - no full content
-      plan = await plansService.getPlanById(id);
+      plan = await resolvedPlan(id);
       if (plan) {
         plan.fullModules = []; // Hide full content for unauthenticated users
       }

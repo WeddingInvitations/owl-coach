@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { TrainingPlan, TrainingModule, Exercise } from '@/types/training-plan';
+import { ExerciseSortableList } from '@/components/plans/ExerciseSortableList';
 
 interface ExistingModule {
   id: string;
@@ -626,24 +627,11 @@ function CreatePlanPage() {
                   {currentModule.exercises.length > 0 && (
                     <div className="mt-4">
                       <h6 className="font-medium mb-2">Ejercicios en este módulo:</h6>
-                      <div className="space-y-2">
-                        {currentModule.exercises.map((exercise: Exercise) => (
-                          <div key={exercise.id} className="flex justify-between items-center p-2 bg-muted rounded">
-                            <div>
-                              <div className="font-medium">{exercise.name}</div>
-                              <div className="text-sm text-muted-foreground">{exercise.sets} series × {exercise.reps}</div>
-                            </div>
-                            <Button 
-                              type="button" 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => removeExercise(exercise.id)}
-                            >
-                              Eliminar
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
+                      <ExerciseSortableList
+                        exercises={currentModule.exercises}
+                        onChange={(exs) => setCurrentModule((prev: TrainingModule) => ({ ...prev, exercises: exs }))}
+                        removeLabel="Eliminar"
+                      />
                     </div>
                   )}
                   {fieldErrors.moduleExercises && (
