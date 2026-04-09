@@ -12,23 +12,55 @@ function getAdminDb() {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertData(data: any): any {
   if (!data) return data;
-  const converted = { ...data };
-  Object.keys(converted).forEach((key) => {
-    const val = converted[key];
-    if (val && typeof val === 'object' && val.toDate) {
-      converted[key] = val.toDate().toISOString();
-    } else if (val && typeof val === 'object' && !Array.isArray(val)) {
-      converted[key] = convertData(val);
+  
+  // Handle arrays
+  if (Array.isArray(data)) {
+    return data.map(item => convertData(item));
+  }
+  
+  // Handle objects
+  if (typeof data === 'object') {
+    // Check if it's a Firestore Timestamp
+    if (data.toDate && typeof data.toDate === 'function') {
+      return data.toDate().toISOString();
     }
-  });
-  return converted;
+    
+    // Convert all properties recursively
+    const converted: any = {};
+    Object.keys(data).forEach((key) => {
+      converted[key] = convertData(data[key]);
+    });
+    return converted;
+  }
+  
+  // Return primitive values as-is
+  return data;
 }
 
 export async function adminGetDocument<T>(collectionName: string, docId: string): Promise<T | null> {
   const docRef = getAdminDb().collection(collectionName).doc(docId);
   const snap = await docRef.get();
   if (!snap.exists) return null;
-  return convertData({ id: snap.id, ...snap.data() }) as T;
+  
+  const rawData = snap.data();
+  const converted = convertData({ id: snap.id, ...rawData }) as T;
+  
+  // Debug logging for training plans
+  if (collectionName === 'trainingPlans') {
+    console.log(`📖 Reading plan from Firestore: ${docId}`);
+    console.log('Raw data keys:', Object.keys(rawData || {}));
+    console.log('PreviewModules:', Array.isArray(rawData?.previewModules) ? `${rawData.previewModules.length} items` : 'N/A');
+    console.log('FullModules:', Array.isArray(rawData?.fullModules) ? `${rawData.fullModules.length} items` : 'N/A');
+    
+    if (rawData?.fullModules && rawData.fullModules.length > 0) {
+      console.log('First fullModule:', {
+        ...rawData.fullModules[0],
+        exercises: `${rawData.fullModules[0].exercises?.length || 0} exercises`
+      });
+    }
+  }
+  
+  return converted;
 }
 
 export async function adminGetDocuments<T>(
@@ -67,8 +99,20 @@ export async function adminUpdateDocument<T>(
   docId: string,
   data: Partial<T>,
 ): Promise<void> {
+  // Debug: Log what we're updating
+  console.log(`adminUpdateDocument - Collection: ${collectionName}, Doc: ${docId}`);
+  console.log('Data keys:', Object.keys(data));
+  if ('previewModules' in data) {
+    console.log('previewModules in data:', Array.isArray((data as any).previewModules) ? (data as any).previewModules.length : 'Not an array');
+  }
+  if ('fullModules' in data) {
+    console.log('fullModules in data:', Array.isArray((data as any).fullModules) ? (data as any).fullModules.length : 'Not an array');
+  }
+  
   const docRef = getAdminDb().collection(collectionName).doc(docId);
   await docRef.update(data as FirebaseFirestore.UpdateData<FirebaseFirestore.DocumentData>);
+  
+  console.log('adminUpdateDocument - Update completed successfully');
 }
 
 export async function adminDeleteDocument(collectionName: string, docId: string): Promise<void> {

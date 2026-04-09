@@ -37,7 +37,20 @@ export class TrainingPlansRepository extends BaseRepository<TrainingPlan> {
       updateData.slug = this.generateSlug(planData.title);
     }
 
+    // Debug: Log what we're updating in Firestore
+    console.log('TrainingPlansRepository - Updating plan:', id);
+    console.log('Update data modules:', {
+      previewModules: updateData.previewModules,
+      fullModules: updateData.fullModules,
+      hasPreview: !!updateData.previewModules,
+      hasFull: !!updateData.fullModules,
+      previewLength: Array.isArray(updateData.previewModules) ? updateData.previewModules.length : 'N/A',
+      fullLength: Array.isArray(updateData.fullModules) ? updateData.fullModules.length : 'N/A',
+    });
+
     await this.update(id, updateData);
+    
+    console.log('TrainingPlansRepository - Update completed');
   }
 
   async getBySlug(slug: string): Promise<TrainingPlan | null> {

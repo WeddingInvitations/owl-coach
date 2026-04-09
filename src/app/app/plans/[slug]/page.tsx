@@ -145,8 +145,24 @@ export default function PlanDetailPage() {
     );
   }
 
-  const allModules = [...plan.previewModules, ...plan.fullModules];
-  const totalEstimatedTime = allModules.reduce((total, module) => total + module.estimatedDuration, 0);
+  const allModules = [
+    ...(Array.isArray(plan.previewModules) ? plan.previewModules : []), 
+    ...(Array.isArray(plan.fullModules) ? plan.fullModules : [])
+  ];
+  const visibleModules = hasAccess ? allModules : (Array.isArray(plan.previewModules) ? plan.previewModules : []);
+  const totalEstimatedTime = allModules.reduce((total, module) => {
+    const duration = typeof module.estimatedDuration === 'number' ? module.estimatedDuration : 0;
+    return total + duration;
+  }, 0);
+
+  // Debug en consola
+  console.log('Plan Detail - Modules:', {
+    previewModules: plan.previewModules,
+    fullModules: plan.fullModules,
+    allModulesLength: allModules.length,
+    totalEstimatedTime,
+    hasAccess
+  });
 
   return (
     <div className="space-y-8">
@@ -182,15 +198,121 @@ export default function PlanDetailPage() {
             <CardHeader>
               <CardTitle>Sobre este Plan</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-6">
               <p className="text-muted-foreground leading-relaxed">
                 {plan.fullDescription}
               </p>
+
+              {/* Plan Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-4 border-t border-b">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">
+                    {allModules.length}
+                    {!hasAccess && plan.fullModules && plan.fullModules.length > 0 && (
+                      <span className="text-sm text-muted-foreground ml-1">*</span>
+                    )}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {allModules.length === 1 ? 'Módulo' : 'Módulos'}
+                    {!hasAccess && plan.fullModules && plan.fullModules.length > 0 && (
+                      <div className="text-[10px] mt-1">
+                        ({visibleModules.length} disponibles)
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">{formatDuration(plan.duration)}</div>
+                  <div className="text-xs text-muted-foreground">Duración</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">
+                    {totalEstimatedTime > 0 ? formatEstimatedDuration(totalEstimatedTime) : '0 min'}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Tiempo Total</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">{formatDifficulty(plan.difficulty)}</div>
+                  <div className="text-xs text-muted-foreground">Nivel</div>
+                </div>
+              </div>
+
+              {/* Modules Overview */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">
+                  Módulos del Plan
+                  {!hasAccess && plan.fullModules && plan.fullModules.length > 0 && (
+                    <span className="text-sm font-normal text-muted-foreground ml-2">
+                      (Mostrando {visibleModules.length} de {allModules.length})
+                    </span>
+                  )}
+                </h3>
+                {visibleModules.length === 0 ? (
+                  <div className="p-8 border rounded-lg bg-muted/20 border-dashed text-center">
+                    <div className="text-4xl mb-3">📚</div>
+                    <p className="text-muted-foreground">
+                      Este plan aún no tiene módulos configurados
+                    </p>
+                    {user?.role === 'coach' || user?.role === 'owner' ? (
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Ve al panel de administración para añadir módulos a este plan
+                      </p>
+                    ) : null}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {visibleModules.map((module, index) => {
+                      const moduleExercises = Array.isArray(module.exercises) ? module.exercises : [];
+                      return (
+                        <div key={module.id} className="p-4 border rounded-lg bg-muted/30">
+                          <div className="flex items-start justify-between mb-2">
+                            <h4 className="font-medium text-sm">
+                              Módulo {index + 1}: {module.title || 'Sin título'}
+                            </h4>
+                            <div className="flex items-center space-x-2 flex-shrink-0 ml-2">
+                              <span className="text-xs text-muted-foreground">
+                                {formatEstimatedDuration(module.estimatedDuration || 0)}
+                              </span>
+                            </div>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            {module.description || 'Sin descripción'}
+                          </p>
+                          <div className="text-xs text-muted-foreground">
+                            📋 {moduleExercises.length} {moduleExercises.length === 1 ? 'ejercicio' : 'ejercicios'}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    
+                    {/* Locked Modules Indicator */}
+                    {!hasAccess && plan.fullModules && plan.fullModules.length > 0 && (
+                      <div className="p-4 border rounded-lg bg-muted/50 border-dashed">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium text-sm flex items-center gap-2">
+                              🔒 {plan.fullModules.length} Módulos Adicionales Bloqueados
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Compra este plan para desbloquear el contenido completo
+                            </p>
+                          </div>
+                          {user?.role === 'user' && (
+                            <Button size="sm" onClick={handlePurchase} loading={purchaseLoading}>
+                              Desbloquear
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
 
           {/* Preview Modules */}
-          {plan.previewModules.length > 0 && (
+          {plan.previewModules && plan.previewModules.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle>Módulos de Vista Previa</CardTitle>
@@ -205,7 +327,7 @@ export default function PlanDetailPage() {
           )}
 
           {/* Full Modules */}
-          {hasAccess && plan.fullModules.length > 0 && (
+          {hasAccess && plan.fullModules && plan.fullModules.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle>Programa de Entrenamiento Completo</CardTitle>
@@ -220,7 +342,7 @@ export default function PlanDetailPage() {
           )}
 
           {/* Locked Content */}
-          {!hasAccess && plan.fullModules.length > 0 && (
+          {!hasAccess && plan.fullModules && plan.fullModules.length > 0 && (
             <Card className="relative">
               <div className="absolute inset-0 bg-muted/50 backdrop-blur-sm rounded-lg flex items-center justify-center z-10">
                 <div className="text-center p-6">
@@ -245,9 +367,9 @@ export default function PlanDetailPage() {
               <CardContent>
                 <div className="space-y-3">
                   {plan.fullModules.map((module, index) => (
-                    <div key={module.id} className="p-4 border rounded-lg opacity-50">
-                      <h4 className="font-medium">Módulo {index + 1}: {module.title}</h4>
-                      <p className="text-sm text-muted-foreground">{module.description}</p>
+                    <div key={module.id || index} className="p-4 border rounded-lg opacity-50">
+                      <h4 className="font-medium">Módulo {index + 1}: {module.title || 'Sin título'}</h4>
+                      <p className="text-sm text-muted-foreground">{module.description || 'Sin descripción'}</p>
                     </div>
                   ))}
                 </div>
@@ -318,7 +440,9 @@ export default function PlanDetailPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Tiempo Estimado</span>
-                <span className="font-medium">{formatEstimatedDuration(totalEstimatedTime)}</span>
+                <span className="font-medium">
+                  {totalEstimatedTime > 0 ? formatEstimatedDuration(totalEstimatedTime) : '0 min'}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Coach</span>
@@ -333,33 +457,86 @@ export default function PlanDetailPage() {
 }
 
 function ModulesList({ modules, isPreview }: { modules: TrainingModule[], isPreview: boolean }) {
+  if (!modules || modules.length === 0) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        No hay módulos disponibles
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      {modules.map((module, index) => (
-        <div key={module.id} className="p-4 border rounded-lg">
-          <div className="flex items-start justify-between mb-2">
-            <h4 className="font-medium">
-              Módulo {index + 1}: {module.title}
-            </h4>
-            <div className="flex items-center space-x-2">
-              {isPreview && (
-                <Badge variant="outline" className="text-xs">
-                  Vista previa
-                </Badge>
-              )}
-              <span className="text-xs text-muted-foreground">
-                {formatEstimatedDuration(module.estimatedDuration)}
-              </span>
+      {modules.map((module, index) => {
+        const moduleExercises = Array.isArray(module.exercises) ? module.exercises : [];
+        
+        return (
+          <div key={module.id || index} className="border rounded-lg overflow-hidden">
+            <div className="p-4 bg-muted/30">
+              <div className="flex items-start justify-between mb-2">
+                <h4 className="font-medium">
+                  Módulo {index + 1}: {module.title || 'Sin título'}
+                </h4>
+                <div className="flex items-center space-x-2">
+                  {isPreview && (
+                    <Badge variant="outline" className="text-xs">
+                      Vista previa
+                    </Badge>
+                  )}
+                  <span className="text-xs text-muted-foreground">
+                    {formatEstimatedDuration(module.estimatedDuration || 0)}
+                  </span>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground mb-2">
+                {module.description || 'Sin descripción'}
+              </p>
+              <div className="text-xs text-muted-foreground">
+                📋 {moduleExercises.length} {moduleExercises.length === 1 ? 'ejercicio' : 'ejercicios'}
+              </div>
             </div>
+            
+            {/* Exercises List */}
+            {moduleExercises.length > 0 && (
+              <div className="p-4 space-y-3 bg-white">
+                {moduleExercises.map((exercise, exIndex) => (
+                  <div key={exercise.id || exIndex} className="p-3 border rounded-lg bg-gray-50">
+                    <div className="flex items-start justify-between mb-2">
+                      <h5 className="font-medium text-sm">{exIndex + 1}. {exercise.name || 'Sin nombre'}</h5>
+                      {exercise.restTime && exercise.restTime > 0 && (
+                        <span className="text-xs text-muted-foreground">
+                          Descanso: {exercise.restTime}s
+                        </span>
+                      )}
+                    </div>
+                    {exercise.description && (
+                      <p className="text-sm text-muted-foreground mb-2">{exercise.description}</p>
+                    )}
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      {exercise.sets && exercise.sets > 0 && (
+                        <span>Series: <span className="font-medium text-foreground">{exercise.sets}</span></span>
+                      )}
+                      {exercise.reps && (
+                        <span>Reps: <span className="font-medium text-foreground">{exercise.reps}</span></span>
+                      )}
+                    </div>
+                    {exercise.instructions && Array.isArray(exercise.instructions) && exercise.instructions.length > 0 && (
+                      <div className="mt-2">
+                        <div className="text-xs font-medium mb-1">Instrucciones:</div>
+                        <ul className="list-disc list-inside text-xs text-muted-foreground space-y-1">
+                          {exercise.instructions.map((instruction, i) => (
+                            <li key={i}>{instruction}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-          <p className="text-sm text-muted-foreground mb-3">
-            {module.description}
-          </p>
-          <div className="text-xs text-muted-foreground">
-            {module.exercises.length} ejercicios
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

@@ -63,7 +63,22 @@ export class PlansService {
   }
 
   async getPlanById(planId: string): Promise<TrainingPlan | null> {
-    return await trainingPlansRepository.getById(planId);
+    const plan = await trainingPlansRepository.getById(planId);
+    
+    if (plan) {
+      console.log('🔍 PlansService.getPlanById result:', {
+        id: plan.id,
+        title: plan.title,
+        previewModules: Array.isArray(plan.previewModules) ? plan.previewModules.length : 'N/A',
+        fullModules: Array.isArray(plan.fullModules) ? plan.fullModules.length : 'N/A',
+      });
+      
+      if (plan.fullModules && plan.fullModules.length > 0) {
+        console.log('First module has exercises:', plan.fullModules[0].exercises?.length || 0);
+      }
+    }
+    
+    return plan;
   }
 
   async getPlanBySlug(slug: string): Promise<TrainingPlan | null> {
@@ -99,8 +114,14 @@ export class PlansService {
       return null;
     }
 
+    console.log('🔒 getPlanWithAccessControl - Plan before access check:', {
+      planId: plan.id,
+      fullModulesLength: plan.fullModules?.length || 0,
+    });
+
     // If no user is logged in, only return preview content
     if (!userId || !userRole) {
+      console.log('🔒 No user/role - blocking full modules');
       return {
         ...plan,
         fullModules: [], // Block full content
@@ -110,13 +131,17 @@ export class PlansService {
     // Check if user has access to full content
     const hasAccess = await this.canUserAccessPlan(userId, planId, userRole);
     
+    console.log('🔒 Access check result:', { hasAccess, userRole });
+    
     if (!hasAccess) {
+      console.log('🔒 No access - blocking full modules');
       return {
         ...plan,
         fullModules: [], // Block full content
       };
     }
 
+    console.log('🔒 Has access - returning full plan with modules');
     return plan;
   }
 

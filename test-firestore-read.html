@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Firestore Read</title>
+</head>
+<body>
+    <h1>Test Plan API</h1>
+    <button onclick="testPlan()">Test Plan Read</button>
+    <pre id="result"></pre>
+
+    <script>
+        async function testPlan() {
+            const planId = 'plan_1775044422908_q9u57pn0p';
+            const resultEl = document.getElementById('result');
+            resultEl.textContent = 'Loading...';
+
+            try {
+                // Get token from localStorage if exists
+                const token = localStorage.getItem('authToken');
+                
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+
+                const response = await fetch(`/api/plans/${planId}?includeContent=true`, {
+                    headers
+                });
+                
+                const data = await response.json();
+                
+                resultEl.textContent = JSON.stringify(data, null, 2);
+                
+                console.log('API Response:', data);
+                console.log('Preview Modules:', data.data?.previewModules);
+                console.log('Full Modules:', data.data?.fullModules);
+            } catch (error) {
+                resultEl.textContent = 'Error: ' + error.message;
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

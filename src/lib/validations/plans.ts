@@ -16,14 +16,15 @@ export const exerciseSchema = z.object({
 export const existingExerciseSchema = z.object({
   id: z.string(),
   name: z.string(),
-  description: z.string(),
-  sets: z.number(),
-  reps: z.string(),
-  restTime: z.number(),
+  description: z.string().default(''),
+  tipo: z.string().optional(),
+  sets: z.number().default(0),
+  reps: z.string().default(''),
+  restTime: z.number().default(0),
   videoUrl: z.string().optional(),
   imageUrl: z.string().optional(), 
   instructions: z.array(z.string()).optional().default([]),
-});
+}).passthrough(); // Permite campos adicionales
 
 export const trainingModuleSchema = z.object({
   id: z.string(),
@@ -36,11 +37,19 @@ export const trainingModuleSchema = z.object({
 // Schema más permisivo para módulos existentes
 export const existingModuleSchema = z.object({
   id: z.string(),
-  title: z.string(),
-  description: z.string(),
-  exercises: z.array(existingExerciseSchema),
-  estimatedDuration: z.number(),
-});
+  title: z.string().optional(),
+  name: z.string().optional(), // Los módulos en Firestore usan 'name' en vez de 'title'
+  description: z.string().default(''),
+  exercises: z.array(existingExerciseSchema).default([]),
+  estimatedDuration: z.number().default(0),
+}).passthrough() // Permite campos adicionales
+  .transform((data) => {
+    // Normalizar: si tiene 'name' pero no 'title', usar 'name' como 'title'
+    return {
+      ...data,
+      title: data.title || data.name || '',
+    };
+  });
 
 const baseTrainingPlanSchema = z.object({
   title: z.string().min(1, 'El título del plan es requerido'),
@@ -52,8 +61,8 @@ const baseTrainingPlanSchema = z.object({
   price: z.number().min(0, 'El precio debe ser 0 o más'),
   currency: z.enum(['USD', 'EUR']),
   categoryIds: z.array(z.string()).min(1, 'Al menos una categoría es requerida'),
-  previewModules: z.array(trainingModuleSchema),
-  fullModules: z.array(existingModuleSchema).optional().or(z.array(z.any()).length(0)),
+  previewModules: z.array(trainingModuleSchema).default([]),
+  fullModules: z.array(existingModuleSchema).default([]),
 });
 
 export const createTrainingPlanSchema = baseTrainingPlanSchema.refine((data) => {
@@ -70,6 +79,8 @@ export const createTrainingPlanSchema = baseTrainingPlanSchema.refine((data) => 
 
 export const updateTrainingPlanSchema = baseTrainingPlanSchema.partial().extend({
   isPublished: z.boolean().optional(),
+  previewModules: z.array(z.any()).optional(),
+  fullModules: z.array(z.any()).optional(),
 });
 
 export type CreateTrainingPlanFormData = z.infer<typeof createTrainingPlanSchema>;

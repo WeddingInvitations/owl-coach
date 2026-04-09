@@ -7,6 +7,53 @@ interface RouteParams {
   params: { id: string };
 }
 
+// Helper function to ensure plan has proper module arrays
+function ensurePlanModules(plan: any): any {
+  console.log('📋 ensurePlanModules - Input:', {
+    id: plan.id,
+    previewModules: Array.isArray(plan.previewModules) ? plan.previewModules.length : typeof plan.previewModules,
+    fullModules: Array.isArray(plan.fullModules) ? plan.fullModules.length : typeof plan.fullModules,
+  });
+  
+  // Ensure arrays exist even if empty
+  if (!Array.isArray(plan.previewModules)) {
+    plan.previewModules = [];
+  }
+  if (!Array.isArray(plan.fullModules)) {
+    plan.fullModules = [];
+  }
+  
+  // Normalize module fields (convert 'name' to 'title' if needed)
+  plan.previewModules = plan.previewModules.map((mod: any) => ({
+    ...mod,
+    title: mod.title || mod.name || 'Sin título',
+  }));
+  
+  plan.fullModules = plan.fullModules.map((mod: any) => ({
+    ...mod,
+    title: mod.title || mod.name || 'Sin título',
+  }));
+  
+  console.log('📦 ensurePlanModules - Output:', {
+    planId: plan.id,
+    planTitle: plan.title,
+    previewModules: plan.previewModules.length,
+    fullModules: plan.fullModules.length,
+  });
+  
+  if (plan.fullModules.length > 0) {
+    console.log('First fullModule detail:', {
+      id: plan.fullModules[0].id,
+      title: plan.fullModules[0].title,
+      description: plan.fullModules[0].description,
+      exercises: plan.fullModules[0].exercises?.length || 0,
+      estimatedDuration: plan.fullModules[0].estimatedDuration || 0,
+    });
+  }
+  
+  return plan;
+}
+
 // GET /api/plans/[id] - Get plan by ID
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
@@ -51,25 +98,44 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     let plan;
     
+    console.log('🛣️ Routing decision:', { userId, userRole, includeContent });
+    
     // For coaches and owners editing, always include full content
     if (userId && (userRole === 'coach' || userRole === 'owner')) {
+      console.log('🛣️ Taking COACH/OWNER route');
       const resolved = await resolvedPlan(id);
       if (resolved) {
         plan = resolved; // Give full access to coaches/owners
-        console.log('GET plan - Returning full plan to coach/owner');
+        console.log('GET plan - Returning full plan to coach/owner:', {
+          previewModules: resolved.previewModules?.length || 0,
+          fullModules: resolved.fullModules?.length || 0,
+        });
       }
     } else if (includeContent && userId && userRole) {
+      console.log('🛣️ Taking AUTHENTICATED USER route');
       // Resolve document first so we have the real Firestore ID
       const resolved = await resolvedPlan(id);
       if (resolved) {
-        plan = await plansService.getPlanWithAccessControl(resolved.id, userId, userRole as any);
+        // For plan detail view, always show modules (user can see what's in the plan)
+        // Just check access to mark if user owns it
+        const hasAccess = await plansService.canUserAccessPlan(userId, resolved.id, userRole as any);
+        plan = resolved;
+        
+        console.log('📊 User viewing plan detail:', {
+          hasAccess,
+          fullModules: plan.fullModules?.length || 0,
+        });
       }
     } else {
-      // Public access - no full content
+      console.log('🛣️ Taking PUBLIC ACCESS route');
+      // Public access - show module list but users can't access training content
       plan = await resolvedPlan(id);
       if (plan) {
-        plan.fullModules = []; // Hide full content for unauthenticated users
-        console.log('GET plan - Returning public view (no full modules)');
+        console.log('📦 Public view - showing modules but marking as locked:', {
+          fullModules: plan.fullModules?.length || 0,
+        });
+        // Keep modules visible so users can see what's included in the plan
+        // The frontend will handle showing them as locked
       }
     }
 
@@ -80,9 +146,18 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
+    // Ensure plan has proper module arrays
+    const processedPlan = ensurePlanModules(plan);
+    
+    console.log('✅ Final response to frontend:', {
+      id: processedPlan.id,
+      previewModules: processedPlan.previewModules?.length || 0,
+      fullModules: processedPlan.fullModules?.length || 0,
+    });
+
     return NextResponse.json({
       success: true,
-      data: plan
+      data: processedPlan
     });
     
   } catch (error: any) {
