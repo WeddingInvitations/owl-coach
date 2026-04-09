@@ -32,9 +32,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         if (userProfile) {
           userId = userProfile.id;
           userRole = userProfile.role as any;
+          
+          // Debug: Log user info
+          console.log('GET plan - User authenticated:', { userId, userRole });
         }
       } catch (err) {
         // Invalid token - continue as unauthenticated user
+        console.log('GET plan - Authentication failed:', err);
       }
     }
 
@@ -47,7 +51,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     let plan;
     
-    if (includeContent && userId && userRole) {
+    // For coaches and owners editing, always include full content
+    if (userId && (userRole === 'coach' || userRole === 'owner')) {
+      const resolved = await resolvedPlan(id);
+      if (resolved) {
+        plan = resolved; // Give full access to coaches/owners
+        console.log('GET plan - Returning full plan to coach/owner');
+      }
+    } else if (includeContent && userId && userRole) {
       // Resolve document first so we have the real Firestore ID
       const resolved = await resolvedPlan(id);
       if (resolved) {
@@ -58,6 +69,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       plan = await resolvedPlan(id);
       if (plan) {
         plan.fullModules = []; // Hide full content for unauthenticated users
+        console.log('GET plan - Returning public view (no full modules)');
       }
     }
 
@@ -122,7 +134,20 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     const body = await request.json();
+    
+    // Debug: Log what we received
+    console.log('Received update data:', {
+      previewModules: body.previewModules,
+      fullModules: body.fullModules,
+    });
+    
     const validatedData = updateTrainingPlanSchema.parse(body);
+    
+    // Debug: Log what's validated
+    console.log('Validated data:', {
+      previewModules: validatedData.previewModules,
+      fullModules: validatedData.fullModules,
+    });
     
     const updatedPlan = await plansService.updatePlan(
       id,

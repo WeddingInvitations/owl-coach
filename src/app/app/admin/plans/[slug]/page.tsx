@@ -80,6 +80,13 @@ const PlanEditPage = ({ params }: { params: { slug: string } }) => {
         });
         if (!res.ok) throw new Error("No se pudo cargar el plan");
         const data = await res.json();
+        
+        // Debug: Log what we received
+        console.log('Loaded plan data:', {
+          previewModules: data.data.previewModules,
+          fullModules: data.data.fullModules,
+        });
+        
         setPlan(data.data);
       } catch (err: any) {
         setError(err.message);
@@ -90,7 +97,13 @@ const PlanEditPage = ({ params }: { params: { slug: string } }) => {
   }, [params.slug]);
 
   useEffect(() => {
-    if (plan) setEditPlan(plan);
+    if (plan) {
+      console.log('Setting editPlan with:', {
+        previewModules: plan.previewModules,
+        fullModules: plan.fullModules,
+      });
+      setEditPlan(plan);
+    }
   }, [plan]);
 
   // Variables para los returns condicionales
@@ -130,9 +143,26 @@ const PlanEditPage = ({ params }: { params: { slug: string } }) => {
     setEditPlan(prev => prev ? { ...prev, [field]: value } : prev);
   };
 
-  // Añadir módulos existentes al plan
+  // Verificar si un módulo ya está añadido al plan
+  const isModuleAlreadyAdded = (moduleId: string): boolean => {
+    if (!editPlan) return false;
+    const inPreview = editPlan.previewModules.some((m: TrainingModule) => m.id === moduleId);
+    const inFull = (editPlan.fullModules || []).some((m: TrainingModule) => m.id === moduleId);
+    return inPreview || inFull;
+  };
+
+  // Añadir módulos existentes al plan (solo los que no estén ya añadidos)
   const addExistingModulesToPlan = () => {
-    const modulesToAdd = existingModules.filter(m => selectedExistingModules.includes(m.id));
+    const modulesToAdd = existingModules
+      .filter(m => selectedExistingModules.includes(m.id))
+      .filter(m => !isModuleAlreadyAdded(m.id)); // Evitar duplicados
+    
+    if (modulesToAdd.length === 0) {
+      alert('Los módulos seleccionados ya están añadidos al plan');
+      setSelectedExistingModules([]);
+      return;
+    }
+
     setEditPlan((prev) => prev ? ({
       ...prev,
       fullModules: [...(prev.fullModules || []), ...modulesToAdd.map(m => ({
@@ -192,6 +222,12 @@ const PlanEditPage = ({ params }: { params: { slug: string } }) => {
   const handleSave = async () => {
     setSaving(true);
     try {
+      // Debug: Log what we're sending
+      console.log('Saving plan with data:', {
+        previewModules: editPlan.previewModules,
+        fullModules: editPlan.fullModules,
+      });
+      
       const token = localStorage.getItem("authToken");
       const res = await fetch(`/api/plans/${editPlan.id}`, {
         method: "PUT",
@@ -235,23 +271,36 @@ const PlanEditPage = ({ params }: { params: { slug: string } }) => {
           {existingModules.length > 0 && (
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground mb-2">Selecciona módulos existentes para añadir al plan:</p>
-              {existingModules.map(mod => (
-                <div key={mod.id} className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id={mod.id}
-                    checked={selectedExistingModules.includes(mod.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedExistingModules(prev => [...prev, mod.id]);
-                      } else {
-                        setSelectedExistingModules(prev => prev.filter(id => id !== mod.id));
-                      }
-                    }}
-                  />
-                  <label htmlFor={mod.id} className="text-sm">{mod.name} - {mod.description}</label>
-                </div>
-              ))}
+              {existingModules.map(mod => {
+                const alreadyAdded = isModuleAlreadyAdded(mod.id);
+                return (
+                  <div key={mod.id} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id={mod.id}
+                      checked={alreadyAdded || selectedExistingModules.includes(mod.id)}
+                      disabled={alreadyAdded}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedExistingModules(prev => [...prev, mod.id]);
+                        } else {
+                          setSelectedExistingModules(prev => prev.filter(id => id !== mod.id));
+                        }
+                      }}
+                      className={alreadyAdded ? 'cursor-not-allowed opacity-50' : ''}
+                    />
+                    <label 
+                      htmlFor={mod.id} 
+                      className={`text-sm ${
+                        alreadyAdded ? 'text-green-600 font-medium' : ''
+                      }`}
+                    >
+                      {mod.name} - {mod.description}
+                      {alreadyAdded && <span className="ml-2 text-xs">(✓ Ya añadido)</span>}
+                    </label>
+                  </div>
+                );
+              })}
               <Button 
                 type="button" 
                 onClick={addExistingModulesToPlan} 
