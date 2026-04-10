@@ -1,7 +1,7 @@
 import { Currency, DifficultyLevel } from '@/types/training-plan';
 
 export function formatPrice(amount: number, currency: Currency): string {
-  const formatter = new Intl.NumberFormat('en-US', {
+  const formatter = new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: currency,
     minimumFractionDigits: 0,
@@ -32,7 +32,7 @@ export function formatDifficulty(difficulty: DifficultyLevel): string {
 }
 
 export function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat('es-ES', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -40,7 +40,7 @@ export function formatDate(date: Date): string {
 }
 
 export function formatDateTime(date: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat('es-ES', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

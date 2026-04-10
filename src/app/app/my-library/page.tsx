@@ -130,7 +130,7 @@ export default function MyLibraryPage() {
                 <div className="text-2xl font-bold">
                   {formatPrice(
                     unlockedPlans.reduce((total, plan) => total + plan.price, 0),
-                    'USD'
+                    'EUR'
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { TrainingPlan } from '@/types/training-plan';
+import { formatPrice } from '@/lib/utils/formatters';
 
 export default function AdminPlansPage() {
     const togglePublish = async (planId: string) => {
@@ -256,7 +257,7 @@ export default function AdminPlansPage() {
                   <div className="text-xs text-gray-500 mb-3">
                     {plan.duration} semanas
                     {(plan.estimatedDuration ?? 0) > 0 ? ` · ${plan.estimatedDuration} min` : ''}
-                    {' · '}<span className="font-semibold text-primary">${plan.price}</span>
+                    {' · '}<span className="font-semibold text-primary">{formatPrice(plan.price, plan.currency)}</span>
                   </div>
 
                   <div>

@@ -5,7 +5,7 @@ export const createPurchaseSchema = z.object({
   productType: z.enum(['plan', 'group']),
   productId: z.string().min(1, 'El ID del producto es requerido'),
   amount: z.number().min(0, 'El monto debe ser 0 o más'),
-  currency: z.enum(['USD', 'EUR']),
+  currency: z.enum(['EUR', 'USD']),
   paymentProvider: z.enum(['simulated', 'stripe', 'paypal']),
 });
 

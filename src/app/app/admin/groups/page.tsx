@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { TrainingPlanGroup } from '@/types/training-plan-group';
 import { TrainingPlan } from '@/types/training-plan';
+import { formatPrice } from '@/lib/utils/formatters';
 
 export default function AdminGroupsPage() {
   const [groups, setGroups] = React.useState<TrainingPlanGroup[]>([]);
@@ -227,11 +228,11 @@ export default function AdminGroupsPage() {
                                 <div className="flex items-center gap-2">
                                   {originalPrice > group.price && (
                                     <span className="text-muted-foreground line-through">
-                                      ${originalPrice}
+                                      {formatPrice(originalPrice, group.currency)}
                                     </span>
                                   )}
                                   <span className="font-medium text-primary text-lg">
-                                    ${group.price}
+                                    {formatPrice(group.price, group.currency)}
                                   </span>
                                 </div>
                               </div>

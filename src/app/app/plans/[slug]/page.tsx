@@ -243,11 +243,11 @@ export default function PlanDetailPage() {
                   Módulos del Plan
                   {!hasAccess && plan.fullModules && plan.fullModules.length > 0 && (
                     <span className="text-sm font-normal text-muted-foreground ml-2">
-                      (Mostrando {visibleModules.length} de {allModules.length})
+                      ({visibleModules.length} desbloqueados, {plan.fullModules.length} bloqueados)
                     </span>
                   )}
                 </h3>
-                {visibleModules.length === 0 ? (
+                {allModules.length === 0 ? (
                   <div className="p-8 border rounded-lg bg-muted/20 border-dashed text-center">
                     <div className="text-4xl mb-3">📚</div>
                     <p className="text-muted-foreground">
@@ -261,6 +261,7 @@ export default function PlanDetailPage() {
                   </div>
                 ) : (
                   <div className="space-y-3">
+                    {/* Visible Modules (Preview or all if has access) */}
                     {visibleModules.map((module, index) => {
                       const moduleExercises = Array.isArray(module.exercises) ? module.exercises : [];
                       return (
@@ -285,25 +286,26 @@ export default function PlanDetailPage() {
                       );
                     })}
                     
-                    {/* Locked Modules Indicator */}
+                    {/* Locked Modules - Show names but locked */}
                     {!hasAccess && plan.fullModules && plan.fullModules.length > 0 && (
-                      <div className="p-4 border rounded-lg bg-muted/50 border-dashed">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-medium text-sm flex items-center gap-2">
-                              🔒 {plan.fullModules.length} Módulos Adicionales Bloqueados
+                      plan.fullModules.map((module, index) => {
+                        const moduleNumber = visibleModules.length + index + 1;
+                        return (
+                          <div key={module.id || `locked-${index}`} className="p-4 border rounded-lg bg-muted/50 border-dashed relative">
+                            <div className="flex items-start justify-between mb-2">
+                              <h4 className="font-medium text-sm flex items-center gap-2">
+                                🔒 Módulo {moduleNumber}: {module.title || 'Sin título'}
+                              </h4>
+                              <span className="text-xs text-muted-foreground flex-shrink-0">
+                                Bloqueado
+                              </span>
                             </div>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Compra este plan para desbloquear el contenido completo
+                            <p className="text-xs text-muted-foreground">
+                              Compra este plan para ver el contenido completo
                             </p>
                           </div>
-                          {user?.role === 'user' && (
-                            <Button size="sm" onClick={handlePurchase} loading={purchaseLoading}>
-                              Desbloquear
-                            </Button>
-                          )}
-                        </div>
-                      </div>
+                        );
+                      })
                     )}
                   </div>
                 )}

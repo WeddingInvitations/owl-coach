@@ -46,6 +46,7 @@ function CreatePlanPage() {
   }, []);
   const router = useRouter();
   const [loading, setLoading] = React.useState(false);
+  const [uploadingImage, setUploadingImage] = React.useState(false);
   const [fieldErrors, setFieldErrors] = React.useState<FieldError>({});
   const [form, setForm] = React.useState<CreatePlanForm>({
     title: '',
@@ -54,8 +55,8 @@ function CreatePlanPage() {
     difficulty: 'principiante',
     duration: 1,
     price: 0,
-    currency: 'USD',
-    coverImage: '',
+    currency: 'EUR',
+    coverImage: '/images/owl.png',
     categoryIds: [],
     previewModules: [],
     fullModules: [],
@@ -80,12 +81,6 @@ function CreatePlanPage() {
           setFieldErrors(prev => ({ ...prev, fullDescription: 'La descripción completa es requerida' }));
         } else {
           setFieldErrors(prev => ({ ...prev, fullDescription: undefined }));
-        }
-      } else if (fieldName === 'coverImage') {
-        if (value?.trim() && !value.startsWith('http')) {
-          setFieldErrors(prev => ({ ...prev, coverImage: 'La imagen de portada debe ser una URL válida' }));
-        } else {
-          setFieldErrors(prev => ({ ...prev, coverImage: undefined }));
         }
       }
     } catch (error) {
@@ -390,7 +385,7 @@ function CreatePlanPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Precio ($)</label>
+                <label className="block text-sm font-medium mb-2">Precio (€)</label>
                 <Input
                   type="number"
                   min="0"
@@ -404,19 +399,70 @@ function CreatePlanPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">URL de Imagen (opcional)</label>
-              <Input
-                type="url"
-                value={form.coverImage || ''}
-                onChange={(e) => {
-                  setForm((prev: CreatePlanForm) => ({ ...prev, coverImage: e.target.value }));
-                  validateField('coverImage', e.target.value);
-                }}
-                placeholder="https://ejemplo.com/imagen.jpg"
-              />
-              {fieldErrors.coverImage && (
-                <p className="text-sm text-destructive mt-1">{fieldErrors.coverImage}</p>
-              )}
+              <label className="block text-sm font-medium mb-2">Imagen del Plan</label>
+              <div className="space-y-3">
+                {/* Preview de la imagen */}
+                {form.coverImage && (
+                  <div className="relative w-full aspect-video rounded-lg overflow-hidden border">
+                    <img
+                      src={form.coverImage}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/images/owl.png';
+                      }}
+                    />
+                  </div>
+                )}
+                
+                {/* Input de archivo */}
+                <div className="flex gap-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+
+                      setUploadingImage(true);
+                      try {
+                        const formData = new FormData();
+                        formData.append('file', file);
+
+                        const response = await fetch('/api/upload', {
+                          method: 'POST',
+                          body: formData,
+                        });
+
+                        const data = await response.json();
+                        if (data.imageUrl) {
+                          setForm((prev: CreatePlanForm) => ({ ...prev, coverImage: data.imageUrl }));
+                        } else {
+                          alert('Error al subir la imagen');
+                        }
+                      } catch (error) {
+                        console.error('Error:', error);
+                        alert('Error al subir la imagen');
+                      } finally {
+                        setUploadingImage(false);
+                      }
+                    }}
+                    className="flex-1 text-sm"
+                    disabled={uploadingImage}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setForm((prev: CreatePlanForm) => ({ ...prev, coverImage: '/images/owl.png' }))}
+                  >
+                    Imagen por defecto
+                  </Button>
+                </div>
+                {uploadingImage && (
+                  <p className="text-sm text-muted-foreground">Subiendo imagen...</p>
+                )}
+              </div>
             </div>
 
             {/* Tags Section */}

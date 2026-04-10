@@ -141,7 +141,7 @@ export default function AdminPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${stats.revenue.toFixed(2)}</div>
+            <div className="text-2xl font-bold">{stats.revenue.toFixed(2)} €</div>
             <div className="text-xs text-muted-foreground">
               Ganancias totales
             </div>
