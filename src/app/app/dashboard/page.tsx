@@ -5,20 +5,71 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { AuthUser } from '@/types/auth';
 
 export default function DashboardPage() {
   const [user, setUser] = React.useState<AuthUser | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [stats, setStats] = React.useState({
+    totalPlans: 0,
+    userLibrary: 0,
+  });
 
   React.useEffect(() => {
     const userData = localStorage.getItem('user');
     if (userData) {
       setUser(JSON.parse(userData));
     }
+    loadStats();
   }, []);
 
+  const loadStats = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('authToken');
+
+      // Cargar planes publicados
+      const plansResponse = await fetch('/api/plans');
+      const plansResult = await plansResponse.json();
+      const plansData = plansResult.data || plansResult;
+      const totalPlans = Array.isArray(plansData) ? plansData.filter((p: any) => p.isPublished).length : 0;
+
+      // Cargar biblioteca del usuario (solo si está autenticado)
+      let userLibrary = 0;
+      if (token) {
+        try {
+          const libraryResponse = await fetch('/api/entitlements', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (libraryResponse.ok) {
+            const libraryData = await libraryResponse.json();
+            userLibrary = libraryData.data?.unlockedPlanIds?.length || 0;
+          }
+        } catch (error) {
+          console.error('Error loading library:', error);
+        }
+      }
+
+      setStats({
+        totalPlans,
+        userLibrary,
+      });
+    } catch (error) {
+      console.error('Error loading dashboard stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!user) {
-    return <div>Cargando...</div>;
+    return (
+      <div className="flex justify-center py-12">
+        <LoadingSpinner size="lg" text="Cargando..." />
+      </div>
+    );
   }
 
   return (
@@ -34,7 +85,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -43,7 +94,11 @@ export default function DashboardPage() {
             <span className="text-2xl">📚</span>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">25</div>
+            {loading ? (
+              <div className="text-2xl font-bold text-muted-foreground">...</div>
+            ) : (
+              <div className="text-2xl font-bold">{stats.totalPlans}</div>
+            )}
             <p className="text-xs text-muted-foreground">
               Planes de entrenamiento disponibles
             </p>
@@ -58,24 +113,13 @@ export default function DashboardPage() {
             <span className="text-2xl">🔓</span>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3</div>
+            {loading ? (
+              <div className="text-2xl font-bold text-muted-foreground">...</div>
+            ) : (
+              <div className="text-2xl font-bold">{stats.userLibrary}</div>
+            )}
             <p className="text-xs text-muted-foreground">
               Planes que posees
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Paquetes de Planes
-            </CardTitle>
-            <span className="text-2xl">📦</span>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">8</div>
-            <p className="text-xs text-muted-foreground">
-              Paquetes de entrenamiento
             </p>
           </CardContent>
         </Card>
@@ -109,11 +153,8 @@ export default function DashboardPage() {
             <Link href="/app/plans">
               <Button className="w-full">Ver Todos los Planes</Button>
             </Link>
-            <Link href="/app/groups">
-              <Button variant="outline" className="w-full">Ver Paquetes</Button>
-            </Link>
             <Link href="/app/my-library">
-              <Button variant="ghost" className="w-full">Mi Biblioteca</Button>
+              <Button variant="outline" className="w-full">Mi Biblioteca</Button>
             </Link>
           </CardContent>
         </Card>
@@ -134,9 +175,6 @@ export default function DashboardPage() {
               <Link href="/app/admin/plans">
                 <Button variant="outline" className="w-full">Todos los planes</Button>
               </Link>
-              <Link href="/app/admin/groups">
-                <Button variant="ghost" className="w-full">Todos los paquetes</Button>
-              </Link>
             </CardContent>
           </Card>
         )}
@@ -155,9 +193,6 @@ export default function DashboardPage() {
               </Link>
               <Link href="/app/coach/plans">
                 <Button variant="outline" className="w-full">Mis planes</Button>
-              </Link>
-              <Link href="/app/coach/groups">
-                <Button variant="ghost" className="w-full">Mis paquetes</Button>
               </Link>
             </CardContent>
           </Card>
@@ -178,56 +213,10 @@ export default function DashboardPage() {
               <Link href="/app/plans">
                 <Button variant="outline" className="w-full">Encontrar nuevos planes</Button>
               </Link>
-              <Link href="/app/groups">
-                <Button variant="ghost" className="w-full">Paquetes de planes</Button>
-              </Link>
             </CardContent>
           </Card>
         )}
       </div>
-
-      {/* Recent Activity */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Actividad Reciente</CardTitle>
-          <CardDescription>
-            Últimas novedades en la plataforma
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center space-x-4">
-              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <span className="text-sm">📚</span>
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">Nuevo plan disponible: "Fundamentos HIIT"</p>
-                <p className="text-xs text-muted-foreground">Hace 2 horas</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <span className="text-sm">📦</span>
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">Nuevo paquete: "Bundle Fuerza Completa"</p>
-                <p className="text-xs text-muted-foreground">Hace 1 día</p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <span className="text-sm">🏆</span>
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">Actualización: Reproductor de vídeo mejorado</p>
-                <p className="text-xs text-muted-foreground">Hace 3 días</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
