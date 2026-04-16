@@ -1,0 +1,21 @@
+# Archivos a ignorar en Cloud Build
+.git
+.gitignore
+.env.local
+.env.local.example
+.vscode
+node_modules
+.next
+.cache
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+README.md
+STRIPE_SETUP.md
+STRIPE_PRODUCTION.md
+debug-scripts.js
+scripts/
+images/
+test-firestore-read.html
+*.md
