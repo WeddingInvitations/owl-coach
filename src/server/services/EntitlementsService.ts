@@ -16,13 +16,13 @@ export class EntitlementsService {
     planId: string, 
     userRole: UserRole
   ): Promise<boolean> {
-    // Owners can access all content
-    if (userRole === 'owner') {
-      return true;
-    }
-
     // Check if user has purchased access to this plan
-    return await entitlementsRepository.hasUserAccessToPlan(userId, planId);
+    // No special treatment for owners/coaches - they must purchase like everyone else
+    const hasAccess = await entitlementsRepository.hasUserAccessToPlan(userId, planId);
+    
+    console.log(`[EntitlementsService] User ${userId} (role: ${userRole}) access to plan ${planId}: ${hasAccess}`);
+    
+    return hasAccess;
   }
 
   async canAccessGroupContent(
@@ -30,13 +30,13 @@ export class EntitlementsService {
     groupId: string, 
     userRole: UserRole
   ): Promise<boolean> {
-    // Owners can access all content
-    if (userRole === 'owner') {
-      return true;
-    }
-
     // Check if user has purchased this group
-    return await entitlementsRepository.hasUserPurchasedProduct(userId, 'group', groupId);
+    // No special treatment for owners/coaches - they must purchase like everyone else
+    const hasAccess = await entitlementsRepository.hasUserPurchasedProduct(userId, 'group', groupId);
+    
+    console.log(`[EntitlementsService] User ${userId} (role: ${userRole}) access to group ${groupId}: ${hasAccess}`);
+    
+    return hasAccess;
   }
 
   async getUserLibrary(userId: string): Promise<{

@@ -13,6 +13,8 @@ export interface Purchase {
   currency: Currency;
   status: PurchaseStatus;
   paymentProvider: PaymentProvider;
+  stripeSessionId?: string;
+  stripePaymentIntentId?: string;
   createdAt: Date;
 }
 

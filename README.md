@@ -63,7 +63,43 @@ NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+
+# Stripe Configuration
+STRIPE_SECRET_KEY=sk_test_your_secret_key
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
 ```
+
+### 4. Stripe Configuration
+
+**📘 [Ver guía detallada de configuración de Stripe →](./STRIPE_SETUP.md)**
+
+#### Resumen rápido:
+
+1. **Crea cuenta en Stripe** (gratis): https://dashboard.stripe.com/register
+2. **Obtén tus API keys** (modo TEST): https://dashboard.stripe.com/test/apikeys
+3. **Actualiza `.env.local`** con tus keys:
+
+```env
+STRIPE_SECRET_KEY=sk_test_tu_clave_secreta
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_tu_clave_publica
+STRIPE_WEBHOOK_SECRET=whsec_tu_webhook_secret
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+```
+
+4. **Para desarrollo local, instala Stripe CLI y ejecuta:**
+
+```powershell
+stripe login
+stripe listen --forward-to localhost:3000/api/billing/webhook
+```
+
+Copia el webhook secret que te muestra al `.env.local` como `STRIPE_WEBHOOK_SECRET`.
+
+**Para instrucciones completas paso a paso, consulta [STRIPE_SETUP.md](./STRIPE_SETUP.md)**
+
+### 5. Database Setup
 
 #### Initialize Firebase
 ```bash
@@ -75,8 +111,6 @@ Select:
 - Firestore Database
 - Hosting
 - Storage (optional)
-
-### 4. Database Setup
 
 #### Deploy Security Rules
 ```bash
@@ -158,10 +192,13 @@ owl-coach/
 - Access purchased content
 - Personal library management
 
-## 🎯 User Journey
-
-### New User Registration
-1. User registers with email/password
+## Redirected to Stripe Checkout (hosted payment page)
+4. Completes payment with card details
+5. Stripe processes payment and sends webhook
+6. Backend creates Purchase and UserEntitlement records
+7. User redirected back to plan page with success message
+8. Content immediately available in user's library
+9. User registers with email/password
 2. Account created with 'user' role
 3. Redirected to dashboard with available content
 4. Can browse and purchase training plans
@@ -189,7 +226,9 @@ owl-coach/
 - `POST /api/auth/logout` - User logout
 
 ### Training Plans
-- `GET /api/plans` - List all plans
+- `GET /api/pbilling/create-checkout-session` - Create Stripe checkout session
+- `POST /api/billing/webhook` - Stripe webhook handler (Stripe calls this)
+- `POST /api/purchases` - Create purchase (legacy/internal)
 - `POST /api/plans` - Create plan (Coach/Owner only)
 - `GET /api/plans/[id]` - Get specific plan
 - `PUT /api/plans/[id]` - Update plan (Coach/Owner only)
@@ -243,23 +282,28 @@ owl-coach/
 }
 ```
 
-### Purchases Collection
+##productType: 'plan' | 'group';
+  productId: string;
+  amount: number;
+  currency: 'EUR' | 'USD';
+  status: 'pending' | 'completed' | 'failed' | 'refunded';
+  paymentProvider: 'simulated' | 'stripe' | 'paypal';
+  stripeSessionId?: string;
+  stripePaymentIntentId?: string;
+  createdAt: Date;
+}
+```
+
+### UserEntitlements Collection
 ```typescript
 {
   id: string;
   userId: string;
-  itemId: string;
-  itemType: 'plan' | 'group';
-  amount: number;
-  status: 'pending' | 'completed' | 'failed';
-  createdAt: string;
-}
-```
-
-### Entitlements Collection
-```typescript
-{
-  id: string;
+  productType: 'plan' | 'group';
+  productId: string;
+  unlockedPlanIds: string[];
+  sourcePurchaseId: string;
+  createdAt: Date
   userId: string;
   trainingPlanId: string;
   grantedAt: string;
@@ -354,13 +398,16 @@ firebase deploy
 - **Clean separation** of concerns
 - **TypeScript** for type safety throughout
 
-### Performance Considerations
-- **Image optimization** with Next.js Image component
-- **Lazy loading** for better user experience
-- **Efficient queries** with Firestore
-- **Caching strategies** for static content
-
-### Future Enhancements
+##Subscription-based pricing with Stripe Billing
+- Multiple payment methods (PayPal, Apple Pay, Google Pay)
+- Progress tracking for users
+- Video streaming integration
+- Mobile app development
+- Advanced analytics dashboard
+- Email notifications
+- Course completion certificates
+- Affiliate program
+- Gift cards and promotion
 - Payment integration (Stripe/PayPal)
 - Progress tracking for users
 - Video streaming integration

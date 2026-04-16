@@ -15,6 +15,7 @@ export default function PlanDetailPage() {
   const searchParams = useSearchParams();
   const planSlug = params.slug as string;
   const hasAccessParam = searchParams.get('access') === 'true';
+  const paymentStatus = searchParams.get('payment');
 
   const [plan, setPlan] = React.useState<TrainingPlan | null>(null);
   const [hasAccess, setHasAccess] = React.useState(false);
@@ -31,6 +32,19 @@ export default function PlanDetailPage() {
 
     loadPlan();
   }, [planSlug]);
+
+  // Handle payment status from Stripe redirect
+  React.useEffect(() => {
+    if (paymentStatus === 'success') {
+      alert('¡Pago completado con éxito! Ya tienes acceso al contenido.');
+      // Reload to refresh access
+      window.location.href = `/app/plans/${planSlug}`;
+    } else if (paymentStatus === 'cancelled') {
+      alert('Pago cancelado. Puedes intentarlo de nuevo cuando quieras.');
+      // Remove query parameter
+      window.history.replaceState({}, '', `/app/plans/${planSlug}`);
+    }
+  }, [paymentStatus, planSlug]);
 
   const loadPlan = async () => {
     try {
@@ -71,7 +85,10 @@ export default function PlanDetailPage() {
   const checkAccess = async (planId: string) => {
     try {
       const token = localStorage.getItem('authToken');
-      if (!token) return;
+      if (!token) {
+        setHasAccess(false);
+        return;
+      }
 
       const response = await fetch(`/api/entitlements?planId=${planId}`, {
         headers: {
@@ -81,21 +98,29 @@ export default function PlanDetailPage() {
 
       if (response.ok) {
         const result = await response.json();
-        setHasAccess(result.data?.hasAccess || false);
+        const accessValue = result.data?.hasAccess || false;
+        console.log(`[Frontend] Access check for plan ${planId}: ${accessValue}`);
+        setHasAccess(accessValue);
+      } else {
+        console.log(`[Frontend] Access check failed for plan ${planId}`);
+        setHasAccess(false);
       }
     } catch (error) {
       console.error('Failed to check access:', error);
+      setHasAccess(false);
     }
   };
 
   const handlePurchase = async () => {
     if (!plan || !user) return;
-
     setPurchaseLoading(true);
+    setError('');
+    
     try {
       const token = localStorage.getItem('authToken');
       
-      const response = await fetch('/api/purchases', {
+      // Create Stripe Checkout Session
+      const response = await fetch('/api/billing/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -104,26 +129,25 @@ export default function PlanDetailPage() {
         body: JSON.stringify({
           productType: 'plan',
           productId: plan.id,
-          amount: plan.price,
-          currency: plan.currency,
-          paymentProvider: 'simulated'
         })
       });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'La compra ha fallado');
-      }
-
-      setHasAccess(true);
-      alert('¡Compra realizada con éxito! Ya tienes acceso al plan completo.');
       
-      // Reload plan to get full content
-      await loadPlan();
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'No se pudo crear la sesión de pago');
+      }
+      
+      // Redirect to Stripe Checkout
+      if (result.data?.url) {
+        window.location.href = result.data.url;
+      } else {
+        throw new Error('No se recibió URL de pago');
+      }
+      
     } catch (error: any) {
-      alert(`La compra ha fallado: ${error.message}`);
-    } finally {
+      setError(error.message);
+      alert(`Error al procesar la compra: ${error.message}`);
       setPurchaseLoading(false);
     }
   };
@@ -353,7 +377,7 @@ export default function PlanDetailPage() {
                   <p className="text-sm text-muted-foreground mb-4">
                     Compra este plan para desbloquear {plan.fullModules.length} módulos adicionales
                   </p>
-                  {user?.role === 'user' && (
+                  {user && (
                     <Button onClick={handlePurchase} loading={purchaseLoading}>
                       Desbloquear por {formatPrice(plan.price, plan.currency)}
                     </Button>
@@ -393,7 +417,7 @@ export default function PlanDetailPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {!hasAccess && user?.role === 'user' && (
+              {!hasAccess && user && (
                 <Button 
                   className="w-full" 
                   onClick={handlePurchase}
@@ -403,7 +427,7 @@ export default function PlanDetailPage() {
                 </Button>
               )}
               
-              {hasAccess && (
+              {hasAccess && user && (
                 <Badge variant="success" className="w-full justify-center py-2">
                   ✅ Ya posees este plan
                 </Badge>
