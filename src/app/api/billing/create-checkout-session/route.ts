@@ -76,13 +76,18 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Error creating checkout session:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      userId: request.headers.get('authorization') ? 'authenticated' : 'not authenticated'
+    });
     
     return NextResponse.json(
       { 
         error: error.message || 'Failed to create checkout session',
         success: false 
       },
-      { status: 500 }
+      { status: error.message?.includes('not configured') ? 503 : 500 }
     );
   }
 }

@@ -119,6 +119,8 @@ export default function PlanDetailPage() {
     try {
       const token = localStorage.getItem('authToken');
       
+      console.log('[Purchase] Starting checkout for plan:', plan.id);
+      
       // Create Stripe Checkout Session
       const response = await fetch('/api/billing/create-checkout-session', {
         method: 'POST',
@@ -132,22 +134,30 @@ export default function PlanDetailPage() {
         })
       });
       
+      console.log('[Purchase] Response status:', response.status);
+      
       const result = await response.json();
       
+      console.log('[Purchase] Response data:', result);
+      
       if (!response.ok) {
+        console.error('[Purchase] Error response:', result.error);
         throw new Error(result.error || 'No se pudo crear la sesión de pago');
       }
       
       // Redirect to Stripe Checkout
       if (result.data?.url) {
+        console.log('[Purchase] Redirecting to Stripe:', result.data.url);
         window.location.href = result.data.url;
       } else {
-        throw new Error('No se recibió URL de pago');
+        console.error('[Purchase] No URL received in response:', result);
+        throw new Error('No se recibió URL de pago de Stripe. Por favor, contacta al administrador.');
       }
       
     } catch (error: any) {
+      console.error('[Purchase] Error:', error);
       setError(error.message);
-      alert(`Error al procesar la compra: ${error.message}`);
+      alert(`❌ Error al procesar la compra:\n\n${error.message}\n\nPor favor, revisa la consola para más detalles.`);
       setPurchaseLoading(false);
     }
   };
